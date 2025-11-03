@@ -9,7 +9,6 @@ const VENDOR_NAV_ITEMS = [
   { label: "Dashboard", path: "/vendor/dashboard" },
   { label: "Apply Jobs", path: "/vendor/apply-jobs" },
   { label: "Work Orders", path: "/vendor/work-orders" },
-  { label: "Timesheets", path: "/vendor/timesheets" },
   { label: "Invoices", path: "/vendor/invoices" },
 ];
 

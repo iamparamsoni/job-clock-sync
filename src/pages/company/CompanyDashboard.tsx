@@ -9,7 +9,6 @@ const COMPANY_NAV_ITEMS = [
   { label: "Dashboard", path: "/company/dashboard" },
   { label: "Post Jobs", path: "/company/post-jobs" },
   { label: "Work Orders", path: "/company/work-orders" },
-  { label: "Timesheets", path: "/company/timesheets" },
   { label: "Invoices", path: "/company/invoices" },
   { label: "Admin", path: "/company/admin" },
 ];
