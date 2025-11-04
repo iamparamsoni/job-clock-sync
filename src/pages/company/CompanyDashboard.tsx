@@ -4,6 +4,8 @@ import Header from "@/components/layout/Header";
 import Navigation from "@/components/layout/Navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 const COMPANY_NAV_ITEMS = [
   { label: "Dashboard", path: "/company/dashboard" },
@@ -16,38 +18,77 @@ const COMPANY_NAV_ITEMS = [
 const CompanyDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
-
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: "Active Vendors",
-      value: "24",
+      value: "0",
       description: "Currently working",
       icon: Users,
     },
     {
       title: "Open Positions",
-      value: "8",
+      value: "0",
       description: "Seeking candidates",
       icon: Briefcase,
     },
     {
       title: "Work Orders",
-      value: "45",
+      value: "0",
       description: "In progress",
       icon: FileText,
     },
     {
       title: "Monthly Spend",
-      value: "$52,400",
+      value: "$0",
       description: "This month",
       icon: DollarSign,
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await api.getCompanyStats();
+        setStats([
+          {
+            title: "Active Vendors",
+            value: String(data.activeVendors || 0),
+            description: "Currently working",
+            icon: Users,
+          },
+          {
+            title: "Open Positions",
+            value: String(data.openPositions || 0),
+            description: "Seeking candidates",
+            icon: Briefcase,
+          },
+          {
+            title: "Work Orders",
+            value: String(data.workOrdersInProgressCompany || 0),
+            description: "In progress",
+            icon: FileText,
+          },
+          {
+            title: "Monthly Spend",
+            value: `$${data.monthlySpend?.toFixed(2) || "0.00"}`,
+            description: "This month",
+            icon: DollarSign,
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch company stats:", error);
+      }
+    };
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">

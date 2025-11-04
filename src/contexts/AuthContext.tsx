@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { api, tokenStorage } from "@/lib/api";
 
 interface User {
   id: string;
@@ -16,23 +17,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Mock users for demonstration
-const MOCK_USERS = [
-  {
-    id: "1",
-    email: "vendor@hourglass.com",
-    password: "password123",
-    name: "Vendor User",
-    role: "vendor" as const,
-  },
-  {
-    id: "2",
-    email: "company@hourglass.com",
-    password: "password123",
-    name: "Company User",
-    role: "company" as const,
-  },
-];
+const USER_KEY = "hourglass_user";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -40,39 +25,63 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Check if user is logged in on mount
-    const storedUser = localStorage.getItem("hourglass_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const storedUser = localStorage.getItem(USER_KEY);
+    const token = tokenStorage.get();
+    
+    if (storedUser && token) {
+      try {
+        const userData = JSON.parse(storedUser);
+        // Verify token is still valid by fetching current user
+        api.getCurrentUser()
+          .then((currentUser) => {
+            setUser({
+              id: currentUser.id,
+              email: currentUser.email,
+              name: currentUser.name,
+              role: currentUser.role.toLowerCase() as "vendor" | "company",
+            });
+          })
+          .catch(() => {
+            // Token invalid, clear storage
+            tokenStorage.remove();
+            localStorage.removeItem(USER_KEY);
+            setUser(null);
+          })
+          .finally(() => setIsLoading(false));
+      } catch {
+        setIsLoading(false);
+      }
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const foundUser = MOCK_USERS.find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (foundUser) {
+    try {
+      const response = await api.login(email, password);
+      
       const userData = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: foundUser.role,
+        id: response.id,
+        email: response.email,
+        name: response.name,
+        role: response.role.toLowerCase() as "vendor" | "company",
       };
+      
       setUser(userData);
-      localStorage.setItem("hourglass_user", JSON.stringify(userData));
+      localStorage.setItem(USER_KEY, JSON.stringify(userData));
       return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : "Invalid email or password" 
+      };
     }
-
-    return { success: false, error: "Invalid email or password" };
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("hourglass_user");
+    tokenStorage.remove();
+    localStorage.removeItem(USER_KEY);
   };
 
   return (

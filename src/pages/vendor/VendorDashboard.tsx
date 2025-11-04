@@ -4,6 +4,8 @@ import Header from "@/components/layout/Header";
 import Navigation from "@/components/layout/Navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { api } from "@/lib/api";
+import { useEffect, useState } from "react";
 
 const VENDOR_NAV_ITEMS = [
   { label: "Dashboard", path: "/vendor/dashboard" },
@@ -15,38 +17,77 @@ const VENDOR_NAV_ITEMS = [
 const VendorDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate("/");
-  };
-
-  const stats = [
+  const [stats, setStats] = useState([
     {
       title: "Active Jobs",
-      value: "3",
+      value: "0",
       description: "Currently applied",
       icon: Briefcase,
     },
     {
       title: "Work Orders",
-      value: "12",
+      value: "0",
       description: "In progress",
       icon: FileText,
     },
     {
       title: "Hours Logged",
-      value: "156",
+      value: "0",
       description: "This month",
       icon: Clock,
     },
     {
       title: "Pending Invoices",
-      value: "$4,250",
+      value: "$0",
       description: "Awaiting payment",
       icon: DollarSign,
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const data = await api.getVendorStats();
+        setStats([
+          {
+            title: "Active Jobs",
+            value: String(data.activeJobs || 0),
+            description: "Currently applied",
+            icon: Briefcase,
+          },
+          {
+            title: "Work Orders",
+            value: String(data.workOrdersInProgress || 0),
+            description: "In progress",
+            icon: FileText,
+          },
+          {
+            title: "Hours Logged",
+            value: String(data.totalHours?.toFixed(0) || 0),
+            description: "This month",
+            icon: Clock,
+          },
+          {
+            title: "Pending Invoices",
+            value: `$${data.pendingInvoicesAmount?.toFixed(2) || "0.00"}`,
+            description: "Awaiting payment",
+            icon: DollarSign,
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch vendor stats:", error);
+      }
+    };
+
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <div className="min-h-screen bg-background">
