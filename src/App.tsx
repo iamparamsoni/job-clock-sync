@@ -6,7 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import VendorDashboard from "./pages/vendor/VendorDashboard";
+import VendorWorkOrders from "./pages/vendor/WorkOrders";
 import CompanyDashboard from "./pages/company/CompanyDashboard";
+import CompanyWorkOrders from "./pages/company/WorkOrders";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -34,6 +36,22 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRole="company">
                   <CompanyDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/work-orders"
+              element={
+                <ProtectedRoute allowedRole="vendor">
+                  <VendorWorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/work-orders"
+              element={
+                <ProtectedRoute allowedRole="company">
+                  <CompanyWorkOrders />
                 </ProtectedRoute>
               }
             />
