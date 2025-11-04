@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Filter, Calendar, User, FileText } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Header from "@/components/layout/Header";
 import Navigation from "@/components/layout/Navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,9 +14,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MOCK_WORK_ORDERS } from "@/data/mockWorkOrders";
-import { WorkOrder, WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS } from "@/types/workOrder";
-import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS } from "@/types/workOrder";
+import { useWorkOrders, useCreateWorkOrder } from "@/hooks/useWorkOrders";
+import { workOrderSchema, WorkOrderFormData } from "@/lib/validations";
 
 const COMPANY_NAV_ITEMS = [
   { label: "Dashboard", path: "/company/dashboard" },
@@ -27,15 +31,20 @@ const COMPANY_NAV_ITEMS = [
 const CompanyWorkOrders = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(MOCK_WORK_ORDERS);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | "ALL">("ALL");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  
-  const [newWorkOrder, setNewWorkOrder] = useState({
-    title: "",
-    description: "",
-    dueDate: "",
+
+  const { data: workOrders, isLoading, error, refetch } = useWorkOrders();
+  const createWorkOrder = useCreateWorkOrder();
+
+  const form = useForm<WorkOrderFormData>({
+    resolver: zodResolver(workOrderSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      dueDate: "",
+    },
   });
 
   const handleLogout = () => {
@@ -43,38 +52,24 @@ const CompanyWorkOrders = () => {
     navigate("/");
   };
 
-  const handleCreateWorkOrder = () => {
-    if (!newWorkOrder.title || !newWorkOrder.description) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    const workOrder: WorkOrder = {
-      id: String(workOrders.length + 1),
-      workOrderNumber: `WO-2024-${160 + workOrders.length}`,
-      title: newWorkOrder.title,
-      description: newWorkOrder.description,
-      companyId: user?.id || "2",
-      status: "DRAFT",
-      dueDate: newWorkOrder.dueDate || undefined,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setWorkOrders([workOrder, ...workOrders]);
-    setNewWorkOrder({ title: "", description: "", dueDate: "" });
+  const onSubmit = async (data: WorkOrderFormData) => {
+    await createWorkOrder.mutateAsync({
+      title: data.title,
+      description: data.description,
+      dueDate: data.dueDate || undefined,
+    });
+    form.reset();
     setIsCreateOpen(false);
-    toast.success("Work order created successfully");
   };
 
-  const filteredWorkOrders = workOrders.filter((wo) => {
-    const matchesSearch = 
+  const filteredWorkOrders = (workOrders || []).filter((wo) => {
+    const matchesSearch =
       wo.workOrderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       wo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       wo.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
+
     const matchesStatus = statusFilter === "ALL" || wo.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -113,39 +108,60 @@ const CompanyWorkOrders = () => {
               </CollapsibleTrigger>
             </CardHeader>
             <CollapsibleContent>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="title">Title *</Label>
-                  <Input
-                    id="title"
-                    placeholder="Enter work order title"
-                    value={newWorkOrder.title}
-                    onChange={(e) => setNewWorkOrder({ ...newWorkOrder, title: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description *</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter detailed description"
-                    value={newWorkOrder.description}
-                    onChange={(e) => setNewWorkOrder({ ...newWorkOrder, description: e.target.value })}
-                    rows={4}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="dueDate">Due Date</Label>
-                  <Input
-                    id="dueDate"
-                    type="datetime-local"
-                    value={newWorkOrder.dueDate}
-                    onChange={(e) => setNewWorkOrder({ ...newWorkOrder, dueDate: e.target.value })}
-                  />
-                </div>
-                <Button onClick={handleCreateWorkOrder} className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Work Order
-                </Button>
+              <CardContent>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Title *</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter work order title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description *</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Enter detailed description" rows={4} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Due Date</FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <Button type="submit" className="w-full" disabled={createWorkOrder.isPending}>
+                      {createWorkOrder.isPending ? (
+                        <>Creating...</>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Create Work Order
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
               </CardContent>
             </CollapsibleContent>
           </Card>
@@ -186,7 +202,32 @@ const CompanyWorkOrders = () => {
 
         {/* Work Orders List */}
         <div className="space-y-4">
-          {filteredWorkOrders.length === 0 ? (
+          {error ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-destructive mb-4">{error.message}</p>
+                <Button onClick={() => refetch()}>Retry</Button>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
+            <>
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-48 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-16 w-full mb-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          ) : filteredWorkOrders.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />

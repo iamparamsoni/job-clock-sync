@@ -50,6 +50,14 @@ export interface UserResponse {
   role: string;
 }
 
+export type WorkOrderStatus = 
+  | "DRAFT" 
+  | "OPEN" 
+  | "ASSIGNED" 
+  | "IN_PROGRESS" 
+  | "COMPLETED" 
+  | "CANCELLED";
+
 export interface WorkOrder {
   id: string;
   workOrderNumber: string;
@@ -57,7 +65,7 @@ export interface WorkOrder {
   description: string;
   companyId: string;
   vendorId?: string;
-  status: string;
+  status: WorkOrderStatus;
   assignedDate?: string;
   dueDate?: string;
   completedDate?: string;

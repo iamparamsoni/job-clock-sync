@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MOCK_WORK_ORDERS } from "@/data/mockWorkOrders";
-import { WorkOrder, WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS } from "@/types/workOrder";
-import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS } from "@/types/workOrder";
+import { useWorkOrders, useUpdateWorkOrderStatus } from "@/hooks/useWorkOrders";
 
 const VENDOR_NAV_ITEMS = [
   { label: "Dashboard", path: "/vendor/dashboard" },
@@ -23,11 +23,11 @@ const VENDOR_NAV_ITEMS = [
 const VendorWorkOrders = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>(
-    MOCK_WORK_ORDERS.filter((wo) => wo.vendorId === "1" || wo.status === "OPEN")
-  );
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | "ALL">("ALL");
+
+  const { data: workOrders, isLoading, error, refetch } = useWorkOrders();
+  const updateStatus = useUpdateWorkOrderStatus();
 
   const handleLogout = () => {
     logout();
@@ -35,22 +35,10 @@ const VendorWorkOrders = () => {
   };
 
   const handleUpdateStatus = (id: string, newStatus: WorkOrderStatus) => {
-    setWorkOrders(
-      workOrders.map((wo) =>
-        wo.id === id
-          ? {
-              ...wo,
-              status: newStatus,
-              updatedAt: new Date().toISOString(),
-              ...(newStatus === "COMPLETED" ? { completedDate: new Date().toISOString() } : {}),
-            }
-          : wo
-      )
-    );
-    toast.success("Work order status updated");
+    updateStatus.mutate({ id, status: newStatus });
   };
 
-  const filteredWorkOrders = workOrders.filter((wo) => {
+  const filteredWorkOrders = (workOrders || []).filter((wo) => {
     const matchesSearch =
       wo.workOrderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
       wo.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -116,7 +104,32 @@ const VendorWorkOrders = () => {
 
         {/* Work Orders List */}
         <div className="space-y-4">
-          {filteredWorkOrders.length === 0 ? (
+          {error ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <p className="text-destructive mb-4">{error.message}</p>
+                <Button onClick={() => refetch()}>Retry</Button>
+              </CardContent>
+            </Card>
+          ) : isLoading ? (
+            <>
+              {[1, 2, 3].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-6 w-48 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-16 w-full mb-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-4 w-32" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          ) : filteredWorkOrders.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center">
                 <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
@@ -159,23 +172,25 @@ const VendorWorkOrders = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  {workOrder.vendorId === "1" && workOrder.status !== "COMPLETED" && (
+                  {workOrder.vendorId === user?.id && workOrder.status !== "COMPLETED" && (
                     <div className="flex gap-2 mt-4">
                       {workOrder.status === "ASSIGNED" && (
                         <Button
                           size="sm"
                           onClick={() => handleUpdateStatus(workOrder.id, "IN_PROGRESS")}
+                          disabled={updateStatus.isPending}
                         >
-                          Start Work
+                          {updateStatus.isPending ? "Updating..." : "Start Work"}
                         </Button>
                       )}
                       {workOrder.status === "IN_PROGRESS" && (
                         <Button
                           size="sm"
                           onClick={() => handleUpdateStatus(workOrder.id, "COMPLETED")}
+                          disabled={updateStatus.isPending}
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          Mark Complete
+                          {updateStatus.isPending ? "Updating..." : "Mark Complete"}
                         </Button>
                       )}
                     </div>
