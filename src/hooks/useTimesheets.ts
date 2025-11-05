@@ -25,6 +25,7 @@ export const useCreateTimesheet = () => {
         workOrderId: string;
       }>;
       notes?: string;
+      vendorId?: string; // For company creating on behalf of vendor
     }) => api.createTimesheet(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["timesheets"] });
