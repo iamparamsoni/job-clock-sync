@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
     proxy: {
       "/api": {
-        target: "http://localhost:8082",
+        target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path, // Keep the /api prefix since backend expects it
