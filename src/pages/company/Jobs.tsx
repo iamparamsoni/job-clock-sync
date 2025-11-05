@@ -8,9 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Search, Briefcase, MapPin, DollarSign, Users } from "lucide-react";
+import { Plus, Search, Briefcase, MapPin, DollarSign, Users, Edit, Eye } from "lucide-react";
 import { JOB_STATUS_LABELS, EMPLOYMENT_TYPE_LABELS, Job } from "@/types/job";
 import { useJobs, useUpdateJobStatus } from "@/hooks/useJobs";
+import { JobFormDialog } from "@/components/jobs/JobFormDialog";
+import { JobApplicantsDialog } from "@/components/jobs/JobApplicantsDialog";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -25,12 +27,35 @@ export default function CompanyJobs() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [jobFormOpen, setJobFormOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [applicantsDialogOpen, setApplicantsDialogOpen] = useState(false);
+  const [applicantsJobId, setApplicantsJobId] = useState<string | null>(null);
+  const [applicantsJobTitle, setApplicantsJobTitle] = useState("");
 
   const { data: jobs = [], isLoading } = useJobs();
   const updateJobStatus = useUpdateJobStatus();
 
   const handleLogout = () => {
     navigate("/");
+  };
+
+  const handleCreateJob = () => {
+    setSelectedJob(null);
+    setJobFormOpen(true);
+  };
+
+  const handleEditJob = (job: Job, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedJob(job);
+    setJobFormOpen(true);
+  };
+
+  const handleViewApplicants = (job: Job, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setApplicantsJobId(job.id);
+    setApplicantsJobTitle(job.title);
+    setApplicantsDialogOpen(true);
   };
 
   return (
@@ -44,7 +69,7 @@ export default function CompanyJobs() {
             <h1 className="text-3xl font-bold">Job Postings</h1>
             <p className="text-muted-foreground">Manage your open positions and applicants</p>
           </div>
-          <Button>
+          <Button onClick={handleCreateJob}>
             <Plus className="mr-2 h-4 w-4" />
             Post New Job
           </Button>
@@ -98,7 +123,7 @@ export default function CompanyJobs() {
               <p className="text-muted-foreground text-center mb-4">
                 Start by posting your first job opening
               </p>
-              <Button>
+              <Button onClick={handleCreateJob}>
                 <Plus className="mr-2 h-4 w-4" />
                 Post New Job
               </Button>
@@ -137,7 +162,11 @@ export default function CompanyJobs() {
                             ${job.salaryMin.toLocaleString()} - ${job.salaryMax.toLocaleString()}
                           </Badge>
                         )}
-                        <Badge variant="outline">
+                        <Badge 
+                          variant="outline" 
+                          className="cursor-pointer hover:bg-accent"
+                          onClick={(e) => handleViewApplicants(job, e)}
+                        >
                           <Users className="mr-1 h-3 w-3" />
                           {job.applicantIds?.length || 0} applicants
                         </Badge>
@@ -148,10 +177,30 @@ export default function CompanyJobs() {
                   <CardDescription className="line-clamp-2">{job.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {job.requiredSkills?.map((skill: string, index: number) => (
-                      <Badge key={index} variant="secondary">{skill}</Badge>
-                    ))}
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-2">
+                      {job.requiredSkills?.map((skill: string, index: number) => (
+                        <Badge key={index} variant="secondary">{skill}</Badge>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => handleEditJob(job, e)}
+                      >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => handleViewApplicants(job, e)}
+                      >
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Applicants
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -159,6 +208,19 @@ export default function CompanyJobs() {
           </div>
         )}
       </main>
+
+      <JobFormDialog
+        open={jobFormOpen}
+        onOpenChange={setJobFormOpen}
+        job={selectedJob}
+      />
+
+      <JobApplicantsDialog
+        open={applicantsDialogOpen}
+        onOpenChange={setApplicantsDialogOpen}
+        jobId={applicantsJobId}
+        jobTitle={applicantsJobTitle}
+      />
     </div>
   );
 }

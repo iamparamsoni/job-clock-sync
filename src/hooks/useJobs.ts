@@ -33,6 +33,30 @@ export const useCreateJob = () => {
   });
 };
 
+export const useUpdateJob = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, ...data }: {
+      id: string;
+      title: string;
+      description: string;
+      location: string;
+      employmentType: string;
+      requiredSkills?: string[];
+      salaryMin?: number;
+      salaryMax?: number;
+    }) => api.updateJob(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      toast.success("Job updated successfully");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update job");
+    },
+  });
+};
+
 export const useUpdateJobStatus = () => {
   const queryClient = useQueryClient();
 
