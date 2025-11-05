@@ -21,8 +21,8 @@ public class Timesheet {
     private String companyId;
     private String workOrderId;
     private TimesheetStatus status;
-    private LocalDateTime weekStartDate;
-    private LocalDateTime weekEndDate;
+    private java.time.LocalDate weekStartDate;
+    private java.time.LocalDate weekEndDate;
     private List<TimesheetEntry> entries;
     private Double totalHours;
     private String notes;
@@ -35,7 +35,7 @@ public class Timesheet {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class TimesheetEntry {
-        private LocalDateTime date;
+        private java.time.LocalDate date;
         private Double hours;
         private String description;
         private String workOrderId;

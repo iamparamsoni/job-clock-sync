@@ -174,6 +174,123 @@ export const api = {
     return api.authenticatedRequest<DashboardStats>("/dashboard/company/stats");
   },
 
+  // Jobs
+  getJobs: async (): Promise<import("@/types/job").Job[]> => {
+    return api.authenticatedRequest<import("@/types/job").Job[]>("/jobs");
+  },
+
+  createJob: async (job: {
+    title: string;
+    description: string;
+    location: string;
+    employmentType: string;
+    requiredSkills?: string[];
+    salaryMin?: number;
+    salaryMax?: number;
+  }): Promise<import("@/types/job").Job> => {
+    return api.authenticatedRequest<import("@/types/job").Job>("/jobs", {
+      method: "POST",
+      body: JSON.stringify(job),
+    });
+  },
+
+  updateJobStatus: async (id: string, status: string): Promise<import("@/types/job").Job> => {
+    return api.authenticatedRequest<import("@/types/job").Job>(`/jobs/${id}/status?status=${status}`, {
+      method: "PUT",
+    });
+  },
+
+  applyForJob: async (id: string): Promise<import("@/types/job").Job> => {
+    return api.authenticatedRequest<import("@/types/job").Job>(`/jobs/${id}/apply`, {
+      method: "POST",
+    });
+  },
+
+  // Timesheets
+  getTimesheets: async (): Promise<import("@/types/timesheet").Timesheet[]> => {
+    return api.authenticatedRequest<import("@/types/timesheet").Timesheet[]>("/timesheets");
+  },
+
+  createTimesheet: async (timesheet: {
+    workOrderId: string;
+    weekStartDate: string;
+    weekEndDate: string;
+    entries: Array<{
+      date: string;
+      hours: number;
+      description: string;
+      workOrderId: string;
+    }>;
+    notes?: string;
+  }): Promise<import("@/types/timesheet").Timesheet> => {
+    return api.authenticatedRequest<import("@/types/timesheet").Timesheet>("/timesheets", {
+      method: "POST",
+      body: JSON.stringify(timesheet),
+    });
+  },
+
+  submitTimesheet: async (id: string): Promise<import("@/types/timesheet").Timesheet> => {
+    return api.authenticatedRequest<import("@/types/timesheet").Timesheet>(`/timesheets/${id}/submit`, {
+      method: "POST",
+    });
+  },
+
+  approveTimesheet: async (id: string): Promise<import("@/types/timesheet").Timesheet> => {
+    return api.authenticatedRequest<import("@/types/timesheet").Timesheet>(`/timesheets/${id}/approve`, {
+      method: "POST",
+    });
+  },
+
+  rejectTimesheet: async (id: string): Promise<import("@/types/timesheet").Timesheet> => {
+    return api.authenticatedRequest<import("@/types/timesheet").Timesheet>(`/timesheets/${id}/reject`, {
+      method: "POST",
+    });
+  },
+
+  // Invoices
+  getInvoices: async (): Promise<import("@/types/invoice").Invoice[]> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice[]>("/invoices");
+  },
+
+  createInvoice: async (invoice: {
+    workOrderId: string;
+    items: Array<{
+      description: string;
+      quantity: number;
+      unitPrice: number;
+    }>;
+    dueDate?: string;
+  }): Promise<import("@/types/invoice").Invoice> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice>("/invoices", {
+      method: "POST",
+      body: JSON.stringify(invoice),
+    });
+  },
+
+  submitInvoice: async (id: string): Promise<import("@/types/invoice").Invoice> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice>(`/invoices/${id}/submit`, {
+      method: "POST",
+    });
+  },
+
+  approveInvoice: async (id: string): Promise<import("@/types/invoice").Invoice> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice>(`/invoices/${id}/approve`, {
+      method: "POST",
+    });
+  },
+
+  rejectInvoice: async (id: string): Promise<import("@/types/invoice").Invoice> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice>(`/invoices/${id}/reject`, {
+      method: "POST",
+    });
+  },
+
+  markInvoiceAsPaid: async (id: string): Promise<import("@/types/invoice").Invoice> => {
+    return api.authenticatedRequest<import("@/types/invoice").Invoice>(`/invoices/${id}/pay`, {
+      method: "POST",
+    });
+  },
+
   // Generic authenticated request helper
   authenticatedRequest: async <T>(
     endpoint: string,

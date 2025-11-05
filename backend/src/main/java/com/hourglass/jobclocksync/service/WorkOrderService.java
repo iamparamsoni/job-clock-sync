@@ -79,6 +79,12 @@ public class WorkOrderService {
         return WorkOrderResponse.fromEntity(saved);
     }
     
+    public String getCompanyIdByWorkOrderId(String workOrderId) {
+        return workOrderRepository.findById(workOrderId)
+            .map(WorkOrder::getCompanyId)
+            .orElseThrow(() -> new RuntimeException("Work order not found"));
+    }
+    
     private String generateWorkOrderNumber() {
         int year = LocalDateTime.now().getYear();
         long count = workOrderRepository.count();
