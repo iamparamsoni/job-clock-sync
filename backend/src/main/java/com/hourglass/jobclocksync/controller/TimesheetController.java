@@ -37,14 +37,26 @@ public class TimesheetController {
             @Valid @RequestBody TimesheetRequest request,
             Authentication authentication) {
         User user = authService.getCurrentUser(authentication.getName());
-        if (user.getRole() != User.UserRole.VENDOR) {
+        
+        String vendorId;
+        String companyId;
+        
+        // Company can create timesheets on behalf of vendors
+        if (user.getRole() == User.UserRole.COMPANY) {
+            if (request.getVendorId() == null || request.getVendorId().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            vendorId = request.getVendorId();
+            companyId = user.getId();
+        } else if (user.getRole() == User.UserRole.VENDOR) {
+            vendorId = user.getId();
+            // Get company ID from work order
+            companyId = workOrderService.getCompanyIdByWorkOrderId(request.getWorkOrderId());
+        } else {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         
-        // Get company ID from work order
-        String companyId = workOrderService.getCompanyIdByWorkOrderId(request.getWorkOrderId());
-        
-        TimesheetResponse response = timesheetService.createTimesheet(request, user.getId(), companyId);
+        TimesheetResponse response = timesheetService.createTimesheet(request, vendorId, companyId);
         return ResponseEntity.ok(response);
     }
     

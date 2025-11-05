@@ -28,7 +28,7 @@ public class User {
     private LocalDateTime updatedAt;
     
     public enum UserRole {
-        VENDOR, COMPANY
+        VENDOR, COMPANY, ADMIN
     }
 }
 

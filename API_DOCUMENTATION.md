@@ -14,6 +14,23 @@ All endpoints except `/auth/login` require JWT authentication.
 Authorization: Bearer <JWT_TOKEN>
 ```
 
+## User Roles
+
+- **VENDOR**: Service providers who can apply for jobs, submit timesheets and invoices
+- **COMPANY**: Organizations who can post jobs, create work orders, and approve submissions
+- **ADMIN**: Administrators who can manage users, roles, and permissions
+
+## API Sections
+
+1. [Authentication APIs](#1-authentication-apis) - Login and user management
+2. [User Management APIs](#2-user-management-apis) - Admin user CRUD operations (NEW)
+3. [Dashboard APIs](#3-dashboard-apis) - Statistics for vendors and companies
+4. [Work Order APIs](#4-work-order-apis) - Work order management
+5. [Job APIs](#5-job-apis) - Job posting and applications
+6. [Timesheet APIs](#6-timesheet-apis) - Timesheet creation and approval
+7. [Invoice APIs](#7-invoice-apis) - Invoice management and payment
+8. [Database Schemas](#database-schemas) - MongoDB collections
+
 ---
 
 ## 1. Authentication APIs
@@ -89,9 +106,243 @@ curl -X GET http://localhost:8082/api/auth/me \
 
 ---
 
-## 2. Dashboard APIs
+## 2. User Management APIs
 
-### 2.1 Get Vendor Dashboard Stats
+### 2.1 Get All Users
+
+**Endpoint:** `GET /users`
+
+**Description:** Get all users in the system (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "string",
+    "email": "string",
+    "name": "string",
+    "role": "string (VENDOR | COMPANY | ADMIN)",
+    "active": "boolean",
+    "createdAt": "string (ISO 8601)",
+    "updatedAt": "string (ISO 8601)"
+  }
+]
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not an admin
+
+---
+
+### 2.2 Get User by ID
+
+**Endpoint:** `GET /users/{id}`
+
+**Description:** Get user details by ID (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Path Parameters:**
+- `id` (required): User ID
+
+**Response:** `200 OK`
+```json
+{
+  "id": "string",
+  "email": "string",
+  "name": "string",
+  "role": "string",
+  "active": "boolean",
+  "createdAt": "string (ISO 8601)",
+  "updatedAt": "string (ISO 8601)"
+}
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not an admin
+- `404 Not Found`: User not found
+
+---
+
+### 2.3 Get Users by Role
+
+**Endpoint:** `GET /users/role/{role}`
+
+**Description:** Get all users with a specific role (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Path Parameters:**
+- `role` (required): User role (VENDOR | COMPANY | ADMIN)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "string",
+    "email": "string",
+    "name": "string",
+    "role": "string",
+    "active": "boolean",
+    "createdAt": "string (ISO 8601)",
+    "updatedAt": "string (ISO 8601)"
+  }
+]
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid role
+- `403 Forbidden`: User is not an admin
+
+---
+
+### 2.4 Create User
+
+**Endpoint:** `POST /users`
+
+**Description:** Create a new user (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Request Body:**
+```json
+{
+  "email": "string (required, email format)",
+  "password": "string (required, min 6 characters)",
+  "name": "string (required)",
+  "role": "string (required, VENDOR | COMPANY | ADMIN)",
+  "active": "boolean (optional, default: true)"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "string",
+  "email": "string",
+  "name": "string",
+  "role": "string",
+  "active": "boolean",
+  "createdAt": "string (ISO 8601)",
+  "updatedAt": "string (ISO 8601)"
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: User already exists or validation error
+- `403 Forbidden`: User is not an admin
+
+**Example:**
+```bash
+curl -X POST http://localhost:8082/api/users \
+  -H "Authorization: Bearer <TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "newuser@example.com",
+    "password": "securePassword123",
+    "name": "New User",
+    "role": "VENDOR",
+    "active": true
+  }'
+```
+
+---
+
+### 2.5 Update User
+
+**Endpoint:** `PUT /users/{id}`
+
+**Description:** Update user details (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Path Parameters:**
+- `id` (required): User ID
+
+**Request Body:**
+```json
+{
+  "email": "string (required)",
+  "password": "string (optional, only if changing password)",
+  "name": "string (required)",
+  "role": "string (required)",
+  "active": "boolean (optional)"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "string",
+  "email": "string",
+  "name": "string",
+  "role": "string",
+  "active": "boolean",
+  "createdAt": "string (ISO 8601)",
+  "updatedAt": "string (ISO 8601)"
+}
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not an admin
+- `404 Not Found`: User not found
+
+---
+
+### 2.6 Delete User
+
+**Endpoint:** `DELETE /users/{id}`
+
+**Description:** Delete a user (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Path Parameters:**
+- `id` (required): User ID
+
+**Response:** `204 No Content`
+
+**Error Responses:**
+- `403 Forbidden`: User is not an admin
+- `404 Not Found`: User not found
+
+---
+
+### 2.7 Toggle User Status
+
+**Endpoint:** `POST /users/{id}/toggle-status`
+
+**Description:** Enable or disable a user account (Admin only)
+
+**Authentication:** Required (ADMIN role only)
+
+**Path Parameters:**
+- `id` (required): User ID
+
+**Response:** `200 OK`
+```json
+{
+  "id": "string",
+  "email": "string",
+  "name": "string",
+  "role": "string",
+  "active": "boolean",
+  "createdAt": "string (ISO 8601)",
+  "updatedAt": "string (ISO 8601)"
+}
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not an admin
+- `404 Not Found`: User not found
+
+---
+
+## 3. Dashboard APIs
+
+### 3.1 Get Vendor Dashboard Stats
 
 **Endpoint:** `GET /dashboard/vendor/stats`
 
@@ -118,7 +369,7 @@ curl -X GET http://localhost:8082/api/auth/me \
 
 ---
 
-### 2.2 Get Company Dashboard Stats
+### 3.2 Get Company Dashboard Stats
 
 **Endpoint:** `GET /dashboard/company/stats`
 
@@ -145,9 +396,9 @@ curl -X GET http://localhost:8082/api/auth/me \
 
 ---
 
-## 3. Work Order APIs
+## 4. Work Order APIs
 
-### 3.1 Create Work Order
+### 4.1 Create Work Order
 
 **Endpoint:** `POST /work-orders`
 
@@ -188,7 +439,7 @@ curl -X GET http://localhost:8082/api/auth/me \
 
 ---
 
-### 3.2 Get Work Orders
+### 4.2 Get Work Orders
 
 **Endpoint:** `GET /work-orders`
 
@@ -220,7 +471,7 @@ curl -X GET http://localhost:8082/api/auth/me \
 
 ---
 
-### 3.3 Update Work Order Status
+### 4.3 Update Work Order Status
 
 **Endpoint:** `PUT /work-orders/{id}/status`
 
@@ -261,7 +512,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/status?status=IN_PROGRESS
 
 ---
 
-### 3.4 Assign Work Order
+### 4.4 Assign Work Order
 
 **Endpoint:** `PUT /work-orders/{id}/assign`
 
@@ -302,9 +553,9 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-## 4. Job APIs
+## 5. Job APIs
 
-### 4.1 Create Job
+### 5.1 Create Job
 
 **Endpoint:** `POST /jobs`
 
@@ -349,7 +600,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 4.2 Get Jobs
+### 5.2 Get Jobs
 
 **Endpoint:** `GET /jobs`
 
@@ -382,7 +633,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 4.3 Update Job Status
+### 5.3 Update Job Status
 
 **Endpoint:** `PUT /jobs/{id}/status`
 
@@ -419,7 +670,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 4.4 Apply for Job
+### 5.4 Apply for Job
 
 **Endpoint:** `POST /jobs/{id}/apply`
 
@@ -452,7 +703,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 4.5 Update Job
+### 5.5 Update Job
 
 **Endpoint:** `PUT /jobs/{id}`
 
@@ -498,15 +749,15 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-## 5. Timesheet APIs
+## 6. Timesheet APIs
 
-### 5.1 Create Timesheet
+### 6.1 Create Timesheet
 
 **Endpoint:** `POST /timesheets`
 
-**Description:** Create a new timesheet
+**Description:** Create a new timesheet. VENDOR creates for themselves, COMPANY can create on behalf of vendor.
 
-**Authentication:** Required (VENDOR role only)
+**Authentication:** Required (VENDOR or COMPANY role)
 
 **Request Body:**
 ```json
@@ -522,7 +773,8 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
       "workOrderId": "string (required)"
     }
   ],
-  "notes": "string (optional)"
+  "notes": "string (optional)",
+  "vendorId": "string (optional, required for COMPANY creating on behalf of vendor)"
 }
 ```
 
@@ -554,11 +806,12 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 ```
 
 **Error Responses:**
-- `403 Forbidden`: User is not a vendor
+- `400 Bad Request`: Missing vendorId when COMPANY creates timesheet
+- `403 Forbidden`: User is not a vendor or company
 
 ---
 
-### 5.2 Get Timesheets
+### 6.2 Get Timesheets
 
 **Endpoint:** `GET /timesheets`
 
@@ -599,7 +852,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 5.3 Submit Timesheet
+### 6.3 Submit Timesheet
 
 **Endpoint:** `POST /timesheets/{id}/submit`
 
@@ -633,7 +886,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 5.4 Approve Timesheet
+### 6.4 Approve Timesheet
 
 **Endpoint:** `POST /timesheets/{id}/approve`
 
@@ -667,7 +920,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 5.5 Reject Timesheet
+### 6.5 Reject Timesheet
 
 **Endpoint:** `POST /timesheets/{id}/reject`
 
@@ -701,9 +954,9 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-## 6. Invoice APIs
+## 7. Invoice APIs
 
-### 6.1 Create Invoice
+### 7.1 Create Invoice
 
 **Endpoint:** `POST /invoices`
 
@@ -758,7 +1011,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 6.2 Get Invoices
+### 7.2 Get Invoices
 
 **Endpoint:** `GET /invoices`
 
@@ -799,7 +1052,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 6.3 Submit Invoice
+### 7.3 Submit Invoice
 
 **Endpoint:** `POST /invoices/{id}/submit`
 
@@ -833,7 +1086,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 6.4 Approve Invoice
+### 7.4 Approve Invoice
 
 **Endpoint:** `POST /invoices/{id}/approve`
 
@@ -867,7 +1120,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 6.5 Reject Invoice
+### 7.5 Reject Invoice
 
 **Endpoint:** `POST /invoices/{id}/reject`
 
@@ -901,7 +1154,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-### 6.6 Mark Invoice as Paid
+### 7.6 Mark Invoice as Paid
 
 **Endpoint:** `POST /invoices/{id}/pay`
 

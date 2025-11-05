@@ -22,6 +22,9 @@ public class TimesheetRequest {
     
     private String notes;
     
+    // Optional: for company creating timesheet on behalf of vendor
+    private String vendorId;
+    
     @Data
     public static class TimesheetEntryRequest {
         @NotBlank(message = "Date is required")
