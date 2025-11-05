@@ -4,6 +4,8 @@ import com.hourglass.jobclocksync.dto.DashboardStatsResponse;
 import com.hourglass.jobclocksync.model.User;
 import com.hourglass.jobclocksync.service.AuthService;
 import com.hourglass.jobclocksync.service.DashboardService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/dashboard")
+@Tag(name = "Dashboard", description = "Dashboard statistics APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class DashboardController {
     
     @Autowired

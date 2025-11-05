@@ -6,6 +6,8 @@ import com.hourglass.jobclocksync.model.User;
 import com.hourglass.jobclocksync.service.AuthService;
 import com.hourglass.jobclocksync.service.InvoiceService;
 import com.hourglass.jobclocksync.service.WorkOrderService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/invoices")
+@Tag(name = "Invoices", description = "Invoice management and payment APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class InvoiceController {
     
     @Autowired

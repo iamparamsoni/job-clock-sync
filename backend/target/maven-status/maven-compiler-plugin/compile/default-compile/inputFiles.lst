@@ -32,6 +32,7 @@ D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\m
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\service\DashboardService.java
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\controller\WorkOrderController.java
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\dto\InvoiceResponse.java
+D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\config\OpenApiConfig.java
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\controller\TimesheetController.java
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\dto\JobRequest.java
 D:\OneDrive - SmartDocs\Desktop\Lovable Integration\job-clock-sync\backend\src\main\java\com\hourglass\jobclocksync\repository\JobRepository.java

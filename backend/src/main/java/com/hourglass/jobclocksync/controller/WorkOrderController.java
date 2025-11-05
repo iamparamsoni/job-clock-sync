@@ -6,6 +6,8 @@ import com.hourglass.jobclocksync.model.User;
 import com.hourglass.jobclocksync.model.WorkOrder;
 import com.hourglass.jobclocksync.service.AuthService;
 import com.hourglass.jobclocksync.service.WorkOrderService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/work-orders")
+@Tag(name = "Work Orders", description = "Work order management APIs")
+@SecurityRequirement(name = "bearerAuth")
 public class WorkOrderController {
     
     @Autowired
@@ -57,8 +61,6 @@ public class WorkOrderController {
             @PathVariable String id,
             @RequestParam String status,
             Authentication authentication) {
-        User user = authService.getCurrentUser(authentication.getName());
-        
         try {
             WorkOrder.WorkOrderStatus orderStatus = WorkOrder.WorkOrderStatus.valueOf(status.toUpperCase());
             WorkOrderResponse response = workOrderService.updateWorkOrderStatus(id, orderStatus);

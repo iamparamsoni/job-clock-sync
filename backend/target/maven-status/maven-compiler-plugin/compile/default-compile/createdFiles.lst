@@ -42,6 +42,7 @@ com\hourglass\jobclocksync\repository\WorkOrderRepository.class
 com\hourglass\jobclocksync\dto\WorkOrderRequest.class
 com\hourglass\jobclocksync\dto\DashboardStatsResponse.class
 com\hourglass\jobclocksync\dto\TimesheetRequest$TimesheetEntryRequest.class
+com\hourglass\jobclocksync\config\OpenApiConfig.class
 com\hourglass\jobclocksync\model\Invoice.class
 com\hourglass\jobclocksync\dto\InvoiceRequest.class
 com\hourglass\jobclocksync\dto\JobRequest.class
