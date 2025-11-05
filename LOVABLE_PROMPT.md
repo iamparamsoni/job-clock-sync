@@ -18,39 +18,51 @@ The repository contains:
 
 ## Current Frontend Status
 
-### ✅ Already Implemented
+### ✅ Already Implemented (75% Complete)
 - Authentication flow (login/logout)
 - Basic routing structure
 - Header and Navigation components
 - Protected routes
-- Dashboard pages (skeleton with stats)
-- Basic page structure for:
-  - Jobs (vendor & company)
-  - Work Orders (vendor & company)
-  - Timesheets (vendor & company)
-  - Invoices (vendor & company)
+- Dashboard pages with live stats
+- **Company Pages:**
+  - ✅ Jobs: Full CRUD (create, edit, view applicants, status update)
+  - ✅ Work Orders: Full CRUD (create, assign vendors, status update)
+  - ⚠️ Timesheets: Approve/reject working, but missing "Create Timesheet" button
+  - ⚠️ Invoices: Approve/reject/pay working, but missing detail view
+- **Vendor Pages:**
+  - ✅ Jobs: Browse and apply
+  - ✅ Work Orders: View and update status
+  - ⚠️ Timesheets: List view working, but "New Timesheet" button NOT connected to form
+  - ⚠️ Invoices: List view working, but "Create Invoice" button NOT connected to form
 - React Query hooks setup
-- API client (`src/lib/api.ts`)
+- API client (`src/lib/api.ts`) - All endpoints included
 - TypeScript types and interfaces
 - UI components (shadcn/ui)
+- Form dialogs created:
+  - ✅ `JobFormDialog.tsx`
+  - ✅ `WorkOrderFormDialog.tsx`
+  - ✅ `TimesheetFormDialog.tsx` (exists but not connected)
+  - ✅ `InvoiceFormDialog.tsx` (exists but not connected)
+  - ✅ `VendorAssignDialog.tsx`
+  - ✅ `JobApplicantsDialog.tsx`
+- Form validation schemas (Zod)
 
-### ❌ Needs Complete Implementation
-- **CRUD operations** for all entities (Create, Update, Delete)
-- **Forms and modals** for creating/editing:
-  - Jobs (create, edit, update status)
-  - Work Orders (create, assign, update status)
-  - Timesheets (create with entries, submit, approve/reject)
-  - Invoices (create with line items, submit, approve/reject, mark as paid)
-- **Company can create timesheets on behalf of vendors** (feature exists in backend)
-- **Data tables** with sorting, filtering, pagination
-- **Status management** workflows
-- **Error handling** and loading states
-- **Form validation** using Zod
-- **Optimistic updates** for better UX
-- **Toast notifications** for all actions
-- **Responsive design** for mobile devices
-- **Empty states** and error states
-- **Loading skeletons** throughout
+### ⚠️ Partially Implemented - Needs Completion
+- **Forms and modals** - Components exist but need connection:
+  - ✅ Jobs: Fully implemented (Company) - Create, edit, view applicants
+  - ✅ Work Orders: Fully implemented (Company) - Create, assign, status update
+  - ⚠️ **Timesheets: Form component exists but NOT connected to buttons**
+    - Vendor page: "New Timesheet" button has no handler
+    - Company page: Missing "Create Timesheet" button for creating on behalf of vendors
+  - ⚠️ **Invoices: Form component exists but NOT connected to buttons**
+    - Vendor page: "Create Invoice" button has no handler
+- **Detail view modals** - Missing for:
+  - Timesheet details (view entries table)
+  - Invoice details (view line items table)
+- **Data tables** - Currently using cards, could be enhanced with:
+  - Pagination (currently showing all items)
+  - Sorting (column headers)
+  - Better table layout
 
 ## Backend API Information
 
@@ -328,36 +340,44 @@ The repository contains:
 
 ## Implementation Checklist
 
-### Vendor Pages
-- [ ] Jobs: Complete list, search, filter, apply functionality
-- [ ] Work Orders: Complete list, status update, detail view
-- [ ] Timesheets: Complete CRUD, entry management, submit flow
-- [ ] Invoices: Complete CRUD, line items management, submit flow
+### ✅ Completed (75%)
+- [x] Jobs: Complete CRUD, applicant management (Company)
+- [x] Jobs: Browse and apply (Vendor)
+- [x] Work Orders: Complete CRUD, vendor assignment (Company)
+- [x] Work Orders: View and status update (Vendor)
+- [x] Form components created for all entities
+- [x] Form validation schemas (Zod)
+- [x] React Query hooks for all operations
+- [x] Loading skeletons and empty states
+- [x] Toast notifications
 
-### Company Pages
-- [ ] Jobs: Complete CRUD, applicant management, status updates
-- [ ] Work Orders: Complete CRUD, vendor assignment, status updates
-- [ ] Timesheets: Review, approve/reject, create on behalf of vendor
-- [ ] Invoices: Review, approve/reject, mark as paid
+### ⚠️ Critical Missing (Must Fix)
+- [ ] **Vendor Timesheets:** Connect "New Timesheet" button to `TimesheetFormDialog`
+  - Add state and handler in `src/pages/vendor/Timesheets.tsx`
+  - Import and render `TimesheetFormDialog`
+  - Fetch work orders using `useWorkOrders()` hook
+- [ ] **Vendor Invoices:** Connect "Create Invoice" button to `InvoiceFormDialog`
+  - Add state and handler in `src/pages/vendor/Invoices.tsx`
+  - Import and render `InvoiceFormDialog`
+  - Fetch work orders using `useWorkOrders()` hook
+- [ ] **Company Timesheets:** Add "Create Timesheet" button
+  - Add button in header
+  - Connect to `TimesheetFormDialog` with `isCompany={true}`
+  - Fetch work orders using `useWorkOrders()` hook
 
-### Shared Components Needed
-- [ ] Form components for all entities
-- [ ] Modal/Dialog components for create/edit
-- [ ] Data tables with sorting/filtering
-- [ ] Status badge component
-- [ ] Date picker component
-- [ ] Multi-select for skills
-- [ ] Confirmation dialogs
-- [ ] Loading skeletons
-- [ ] Empty state components
-- [ ] Error state components
+### 📋 Medium Priority (Should Have)
+- [ ] **Detail View Modals:**
+  - [ ] `TimesheetDetailDialog.tsx` - View timesheet entries in table
+  - [ ] `InvoiceDetailDialog.tsx` - View invoice line items and calculations
+  - Connect "View" buttons to these dialogs
+- [ ] **Work Order Detail View:**
+  - [ ] `WorkOrderDetailDialog.tsx` - View full work order details
 
-### Hooks to Complete/Enhance
-- [ ] `useJobs.ts` - Add create, update mutations
-- [ ] `useWorkOrders.ts` - Add create, assign, update mutations
-- [ ] `useTimesheets.ts` - Add create, approve, reject mutations
-- [ ] `useInvoices.ts` - Add create, approve, reject, pay mutations
-- [ ] Add optimistic updates to all mutations
+### 🎨 Low Priority (Nice to Have)
+- [ ] Pagination for all list pages
+- [ ] Sorting for table columns
+- [ ] Convert card layouts to table layouts where appropriate
+- [ ] Enhanced filtering options
 
 ## API Integration Details
 
@@ -518,7 +538,128 @@ The frontend is complete when:
 - ✅ No console errors
 - ✅ All features work end-to-end
 
+## 🔧 Critical Fixes Needed
+
+### 1. Connect Vendor Timesheet Form (HIGH PRIORITY)
+
+**File:** `src/pages/vendor/Timesheets.tsx`
+
+**Add:**
+```typescript
+import { TimesheetFormDialog } from "@/components/timesheets/TimesheetFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
+
+const [timesheetFormOpen, setTimesheetFormOpen] = useState(false);
+const { data: workOrders = [] } = useWorkOrders();
+
+const handleCreateTimesheet = () => {
+  setTimesheetFormOpen(true);
+};
+
+// Update button onClick
+<Button onClick={handleCreateTimesheet}>
+
+// Add dialog at end
+<TimesheetFormDialog
+  open={timesheetFormOpen}
+  onOpenChange={setTimesheetFormOpen}
+  workOrders={workOrders}
+  isCompany={false}
+/>
+```
+
+### 2. Connect Vendor Invoice Form (HIGH PRIORITY)
+
+**File:** `src/pages/vendor/Invoices.tsx`
+
+**Add:**
+```typescript
+import { InvoiceFormDialog } from "@/components/invoices/InvoiceFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
+
+const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
+const { data: workOrders = [] } = useWorkOrders();
+
+const handleCreateInvoice = () => {
+  setInvoiceFormOpen(true);
+};
+
+// Update button onClick
+<Button onClick={handleCreateInvoice}>
+
+// Add dialog at end
+<InvoiceFormDialog
+  open={invoiceFormOpen}
+  onOpenChange={setInvoiceFormOpen}
+  workOrders={workOrders}
+/>
+```
+
+### 3. Add Company Create Timesheet Feature (MEDIUM PRIORITY)
+
+**File:** `src/pages/company/Timesheets.tsx`
+
+**Add:**
+```typescript
+import { TimesheetFormDialog } from "@/components/timesheets/TimesheetFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
+
+const [timesheetFormOpen, setTimesheetFormOpen] = useState(false);
+const { data: workOrders = [] } = useWorkOrders();
+
+const handleCreateTimesheet = () => {
+  setTimesheetFormOpen(true);
+};
+
+// Add button in header section
+<div className="flex justify-between items-center mb-6">
+  <div>
+    <h1 className="text-3xl font-bold">Timesheets</h1>
+    <p className="text-muted-foreground">Review and approve vendor timesheets</p>
+  </div>
+  <Button onClick={handleCreateTimesheet}>
+    <Plus className="mr-2 h-4 w-4" />
+    Create Timesheet
+  </Button>
+</div>
+
+// Add dialog at end
+<TimesheetFormDialog
+  open={timesheetFormOpen}
+  onOpenChange={setTimesheetFormOpen}
+  workOrders={workOrders}
+  isCompany={true}
+/>
+```
+
 ---
 
-**Start by analyzing the existing code structure, then build out the missing functionality. Make it beautiful, make it work, and make it production-ready!** 🚀
+## 📊 Current Status Summary
+
+**Completion:** ~75%
+
+**What's Working:**
+- ✅ Company: Jobs (full CRUD), Work Orders (full CRUD)
+- ✅ Vendor: Jobs (browse/apply), Work Orders (view/update)
+- ✅ All form dialogs created and validated
+- ✅ All hooks implemented
+- ✅ Approve/reject workflows working
+
+**What's Missing:**
+- ❌ Vendor Timesheet form connection (CRITICAL)
+- ❌ Vendor Invoice form connection (CRITICAL)
+- ❌ Company create timesheet button (MEDIUM)
+- ❌ Detail view modals (MEDIUM)
+- ⚠️ Pagination and sorting (LOW)
+
+**Estimated Time to Complete:** 5-7 hours
+
+---
+
+**Priority Actions:**
+1. Connect existing form dialogs to buttons (2-3 hours)
+2. Add company create timesheet feature (1 hour)
+3. Create detail view modals (2-3 hours)
+
+**All form components are ready - just need to connect them!** 🚀
 
