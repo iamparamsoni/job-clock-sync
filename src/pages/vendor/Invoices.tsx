@@ -11,6 +11,8 @@ import { Plus, DollarSign, FileText, Calendar, Send } from "lucide-react";
 import { INVOICE_STATUS_LABELS, Invoice } from "@/types/invoice";
 import { format } from "date-fns";
 import { useInvoices, useSubmitInvoice } from "@/hooks/useInvoices";
+import { InvoiceFormDialog } from "@/components/invoices/InvoiceFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
 
 const VENDOR_NAV_ITEMS = [
   { name: "Dashboard", path: "/vendor/dashboard" },
@@ -24,12 +26,18 @@ export default function VendorInvoices() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
 
   const { data: invoices = [], isLoading } = useInvoices();
   const submitInvoice = useSubmitInvoice();
+  const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
     navigate("/");
+  };
+
+  const handleCreateInvoice = () => {
+    setInvoiceFormOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -54,7 +62,7 @@ export default function VendorInvoices() {
             <h1 className="text-3xl font-bold">Invoices</h1>
             <p className="text-muted-foreground">Create and manage your invoices</p>
           </div>
-          <Button>
+          <Button onClick={handleCreateInvoice}>
             <Plus className="mr-2 h-4 w-4" />
             Create Invoice
           </Button>
@@ -95,7 +103,7 @@ export default function VendorInvoices() {
               <p className="text-muted-foreground text-center mb-4">
                 Create your first invoice to get paid for your work
               </p>
-              <Button>
+              <Button onClick={handleCreateInvoice}>
                 <Plus className="mr-2 h-4 w-4" />
                 Create Invoice
               </Button>
@@ -163,6 +171,12 @@ export default function VendorInvoices() {
           </div>
         )}
       </main>
+
+      <InvoiceFormDialog
+        open={invoiceFormOpen}
+        onOpenChange={setInvoiceFormOpen}
+        workOrders={workOrders}
+      />
     </div>
   );
 }

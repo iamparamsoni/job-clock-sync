@@ -11,6 +11,8 @@ import { Plus, Clock, Calendar, FileText, Send } from "lucide-react";
 import { TIMESHEET_STATUS_LABELS, Timesheet } from "@/types/timesheet";
 import { format } from "date-fns";
 import { useTimesheets, useSubmitTimesheet } from "@/hooks/useTimesheets";
+import { TimesheetFormDialog } from "@/components/timesheets/TimesheetFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
 
 const VENDOR_NAV_ITEMS = [
   { name: "Dashboard", path: "/vendor/dashboard" },
@@ -24,12 +26,18 @@ export default function VendorTimesheets() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [timesheetFormOpen, setTimesheetFormOpen] = useState(false);
 
   const { data: timesheets = [], isLoading } = useTimesheets();
   const submitTimesheet = useSubmitTimesheet();
+  const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
     navigate("/");
+  };
+
+  const handleCreateTimesheet = () => {
+    setTimesheetFormOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -47,7 +55,7 @@ export default function VendorTimesheets() {
             <h1 className="text-3xl font-bold">Timesheets</h1>
             <p className="text-muted-foreground">Submit and track your work hours</p>
           </div>
-          <Button>
+          <Button onClick={handleCreateTimesheet}>
             <Plus className="mr-2 h-4 w-4" />
             New Timesheet
           </Button>
@@ -88,7 +96,7 @@ export default function VendorTimesheets() {
               <p className="text-muted-foreground text-center mb-4">
                 Create your first timesheet to start tracking hours
               </p>
-              <Button>
+              <Button onClick={handleCreateTimesheet}>
                 <Plus className="mr-2 h-4 w-4" />
                 New Timesheet
               </Button>
@@ -148,6 +156,13 @@ export default function VendorTimesheets() {
           </div>
         )}
       </main>
+
+      <TimesheetFormDialog
+        open={timesheetFormOpen}
+        onOpenChange={setTimesheetFormOpen}
+        workOrders={workOrders}
+        isCompany={false}
+      />
     </div>
   );
 }

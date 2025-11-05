@@ -8,10 +8,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
-import { Search, Clock, Calendar, FileText, CheckCircle, XCircle } from "lucide-react";
+import { Search, Clock, Calendar, FileText, CheckCircle, XCircle, Plus } from "lucide-react";
 import { TIMESHEET_STATUS_LABELS, Timesheet } from "@/types/timesheet";
 import { format } from "date-fns";
 import { useTimesheets, useApproveTimesheet, useRejectTimesheet } from "@/hooks/useTimesheets";
+import { TimesheetFormDialog } from "@/components/timesheets/TimesheetFormDialog";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -26,13 +28,19 @@ export default function CompanyTimesheets() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [timesheetFormOpen, setTimesheetFormOpen] = useState(false);
 
   const { data: timesheets = [], isLoading } = useTimesheets();
   const approveTimesheet = useApproveTimesheet();
   const rejectTimesheet = useRejectTimesheet();
+  const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
     navigate("/");
+  };
+
+  const handleCreateTimesheet = () => {
+    setTimesheetFormOpen(true);
   };
 
   const formatDate = (dateString: string) => {
@@ -45,9 +53,15 @@ export default function CompanyTimesheets() {
       <Navigation items={COMPANY_NAV_ITEMS} />
 
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Timesheets</h1>
-          <p className="text-muted-foreground">Review and approve vendor timesheets</p>
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-3xl font-bold">Timesheets</h1>
+            <p className="text-muted-foreground">Review and approve vendor timesheets</p>
+          </div>
+          <Button onClick={handleCreateTimesheet}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Timesheet
+          </Button>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -167,6 +181,13 @@ export default function CompanyTimesheets() {
           </div>
         )}
       </main>
+
+      <TimesheetFormDialog
+        open={timesheetFormOpen}
+        onOpenChange={setTimesheetFormOpen}
+        workOrders={workOrders}
+        isCompany={true}
+      />
     </div>
   );
 }
