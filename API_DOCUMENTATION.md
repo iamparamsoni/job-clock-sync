@@ -707,7 +707,7 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 **Endpoint:** `PUT /jobs/{id}`
 
-**Description:** Update job details
+**Description:** Update job details (Company only)
 
 **Authentication:** Required (COMPANY role only)
 
@@ -741,6 +741,38 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
   "createdAt": "string (ISO 8601)",
   "updatedAt": "string (ISO 8601)"
 }
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not a company
+- `404 Not Found`: Job not found
+
+---
+
+### 5.6 Get Job Applicants
+
+**Endpoint:** `GET /jobs/{id}/applicants`
+
+**Description:** Get detailed information about vendors who applied for a job (Company only)
+
+**Authentication:** Required (COMPANY role only)
+
+**Path Parameters:**
+- `id` (required): Job ID
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "string",
+    "email": "string",
+    "name": "string",
+    "role": "string",
+    "active": "boolean",
+    "createdAt": "string (ISO 8601)",
+    "updatedAt": "string (ISO 8601)"
+  }
+]
 ```
 
 **Error Responses:**
@@ -954,7 +986,41 @@ curl -X PUT "http://localhost:8082/api/work-orders/123/assign?vendorId=456" \
 
 ---
 
-## 7. Invoice APIs
+## 7. Vendor Management APIs
+
+### 7.1 Get All Vendors
+
+**Endpoint:** `GET /vendors`
+
+**Description:** Get list of all active vendors (Company only). Used for vendor selection in work order assignment and timesheet creation.
+
+**Authentication:** Required (COMPANY role only)
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "string",
+    "email": "string",
+    "name": "string",
+    "role": "VENDOR",
+    "active": "boolean",
+    "createdAt": "string (ISO 8601)",
+    "updatedAt": "string (ISO 8601)"
+  }
+]
+```
+
+**Error Responses:**
+- `403 Forbidden`: User is not a company
+
+**Use Cases:**
+- Populate vendor dropdown when assigning work orders
+- Populate vendor dropdown when creating timesheets on behalf of vendors
+
+---
+
+## 8. Invoice APIs
 
 ### 7.1 Create Invoice
 

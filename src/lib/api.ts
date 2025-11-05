@@ -223,6 +223,25 @@ export const api = {
     });
   },
 
+  updateJob: async (id: string, job: {
+    title: string;
+    description: string;
+    location: string;
+    employmentType: string;
+    requiredSkills?: string[];
+    salaryMin?: number;
+    salaryMax?: number;
+  }): Promise<import("@/types/job").Job> => {
+    return api.authenticatedRequest<import("@/types/job").Job>(`/jobs/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(job),
+    });
+  },
+
+  getJobApplicants: async (id: string): Promise<UserResponse[]> => {
+    return api.authenticatedRequest<UserResponse[]>(`/jobs/${id}/applicants`);
+  },
+
   applyForJob: async (id: string): Promise<import("@/types/job").Job> => {
     return api.authenticatedRequest<import("@/types/job").Job>(`/jobs/${id}/apply`, {
       method: "POST",
@@ -245,6 +264,7 @@ export const api = {
       workOrderId: string;
     }>;
     notes?: string;
+    vendorId?: string; // Optional: for company creating on behalf of vendor
   }): Promise<import("@/types/timesheet").Timesheet> => {
     return api.authenticatedRequest<import("@/types/timesheet").Timesheet>("/timesheets", {
       method: "POST",
@@ -312,6 +332,11 @@ export const api = {
     return api.authenticatedRequest<import("@/types/invoice").Invoice>(`/invoices/${id}/pay`, {
       method: "POST",
     });
+  },
+
+  // Vendors (for company to get vendor list)
+  getVendors: async (): Promise<UserResponse[]> => {
+    return api.authenticatedRequest<UserResponse[]>("/vendors");
   },
 
   // Generic authenticated request helper

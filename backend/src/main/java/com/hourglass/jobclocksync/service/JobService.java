@@ -2,8 +2,11 @@ package com.hourglass.jobclocksync.service;
 
 import com.hourglass.jobclocksync.dto.JobRequest;
 import com.hourglass.jobclocksync.dto.JobResponse;
+import com.hourglass.jobclocksync.dto.UserResponse;
 import com.hourglass.jobclocksync.model.Job;
+import com.hourglass.jobclocksync.model.User;
 import com.hourglass.jobclocksync.repository.JobRepository;
+import com.hourglass.jobclocksync.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,9 @@ public class JobService {
     
     @Autowired
     private JobRepository jobRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     public JobResponse createJob(JobRequest request, String companyId) {
         Job job = new Job();
@@ -93,6 +99,22 @@ public class JobService {
         
         Job saved = jobRepository.save(job);
         return JobResponse.fromEntity(saved);
+    }
+    
+    public List<UserResponse> getJobApplicants(String jobId) {
+        Job job = jobRepository.findById(jobId)
+            .orElseThrow(() -> new RuntimeException("Job not found"));
+        
+        if (job.getApplicantIds() == null || job.getApplicantIds().isEmpty()) {
+            return List.of();
+        }
+        
+        return job.getApplicantIds().stream()
+            .map(vendorId -> userRepository.findById(vendorId))
+            .filter(java.util.Optional::isPresent)
+            .map(java.util.Optional::get)
+            .map(UserResponse::fromEntity)
+            .collect(Collectors.toList());
     }
 }
 

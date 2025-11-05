@@ -8,6 +8,7 @@ com\hourglass\jobclocksync\model\Job$JobStatus.class
 com\hourglass\jobclocksync\controller\WorkOrderController.class
 com\hourglass\jobclocksync\model\Job.class
 com\hourglass\jobclocksync\security\SecurityConfig.class
+com\hourglass\jobclocksync\controller\VendorController.class
 com\hourglass\jobclocksync\service\JobService.class
 com\hourglass\jobclocksync\service\DashboardService.class
 com\hourglass\jobclocksync\dto\LoginRequest.class

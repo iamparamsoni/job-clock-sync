@@ -35,6 +35,8 @@ tags:
     description: Dashboard statistics APIs
   - name: User Management
     description: User management APIs (Admin only)
+  - name: Vendors
+    description: Vendor management APIs (Company only)
   - name: Work Orders
     description: Work order management APIs
   - name: Jobs
@@ -566,6 +568,34 @@ paths:
         '404':
           $ref: '#/components/responses/NotFoundError'
 
+  /jobs/{id}/applicants:
+    get:
+      tags:
+        - Jobs
+      summary: Get job applicants
+      description: Get detailed information about vendors who applied for a job (Company only)
+      operationId: getJobApplicants
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved applicants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
   # ============================================================================
   # Timesheet APIs
   # ============================================================================
@@ -840,6 +870,28 @@ paths:
           $ref: '#/components/responses/ForbiddenError'
         '404':
           $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================================
+  # Vendor Management APIs (Company only)
+  # ============================================================================
+  /vendors:
+    get:
+      tags:
+        - Vendors
+      summary: Get all vendors
+      description: Get list of all active vendors for company to use in dropdowns (Company only)
+      operationId: getVendors
+      responses:
+        '200':
+          description: Successfully retrieved vendors
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
 
 # ==============================================================================
 # Components

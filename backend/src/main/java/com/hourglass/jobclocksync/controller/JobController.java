@@ -113,5 +113,22 @@ public class JobController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @GetMapping("/{id}/applicants")
+    public ResponseEntity<List<com.hourglass.jobclocksync.dto.UserResponse>> getJobApplicants(
+            @PathVariable String id,
+            Authentication authentication) {
+        User user = authService.getCurrentUser(authentication.getName());
+        if (user.getRole() != User.UserRole.COMPANY) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        try {
+            List<com.hourglass.jobclocksync.dto.UserResponse> applicants = jobService.getJobApplicants(id);
+            return ResponseEntity.ok(applicants);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
 
