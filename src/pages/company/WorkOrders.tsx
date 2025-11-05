@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Filter, Calendar, User, FileText } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Search, Plus, Filter, Calendar, User, FileText, Edit, UserPlus } from "lucide-react";
 import Header from "@/components/layout/Header";
 import Navigation from "@/components/layout/Navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,15 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS } from "@/types/workOrder";
-import { useWorkOrders, useCreateWorkOrder } from "@/hooks/useWorkOrders";
-import { workOrderSchema, WorkOrderFormData } from "@/lib/validations";
+import { WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS, WorkOrder } from "@/types/workOrder";
+import { useWorkOrders } from "@/hooks/useWorkOrders";
+import { WorkOrderFormDialog } from "@/components/workorders/WorkOrderFormDialog";
+import { VendorAssignDialog } from "@/components/workorders/VendorAssignDialog";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -33,33 +28,23 @@ const CompanyWorkOrders = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<WorkOrderStatus | "ALL">("ALL");
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [workOrderFormOpen, setWorkOrderFormOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedWorkOrderId, setSelectedWorkOrderId] = useState<string | null>(null);
+  const [selectedWorkOrderTitle, setSelectedWorkOrderTitle] = useState("");
 
-  const { data: workOrders, isLoading, error, refetch } = useWorkOrders();
-  const createWorkOrder = useCreateWorkOrder();
-
-  const form = useForm<WorkOrderFormData>({
-    resolver: zodResolver(workOrderSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      dueDate: "",
-    },
-  });
+  const { data: workOrders, isLoading, error } = useWorkOrders();
 
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
-  const onSubmit = async (data: WorkOrderFormData) => {
-    await createWorkOrder.mutateAsync({
-      title: data.title,
-      description: data.description,
-      dueDate: data.dueDate || undefined,
-    });
-    form.reset();
-    setIsCreateOpen(false);
+  const handleAssignVendor = (workOrder: WorkOrder, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedWorkOrderId(workOrder.id);
+    setSelectedWorkOrderTitle(workOrder.title);
+    setAssignDialogOpen(true);
   };
 
   const filteredWorkOrders = (workOrders || []).filter((wo) => {
@@ -88,106 +73,16 @@ const CompanyWorkOrders = () => {
       <Navigation items={COMPANY_NAV_ITEMS} />
 
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Work Orders</h1>
-          <p className="text-muted-foreground mt-2 text-base sm:text-lg">Manage and track all work orders seamlessly</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Work Orders</h1>
+            <p className="text-muted-foreground mt-2 text-base sm:text-lg">Manage and track all work orders seamlessly</p>
+          </div>
+          <Button onClick={() => setWorkOrderFormOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Work Order
+          </Button>
         </div>
-
-        {/* Create Work Order Form */}
-        <Collapsible open={isCreateOpen} onOpenChange={setIsCreateOpen} className="mb-8">
-          <Card className="border-2 border-primary/10 shadow-lg">
-            <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
-              <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between p-6 h-auto hover:bg-transparent">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <Plus className="h-5 w-5 text-primary" />
-                    </div>
-                    <CardTitle className="text-xl">Create New Work Order</CardTitle>
-                  </div>
-                  <Badge variant="secondary" className="font-normal">
-                    {isCreateOpen ? "Hide Form" : "Show Form"}
-                  </Badge>
-                </Button>
-              </CollapsibleTrigger>
-            </CardHeader>
-            <CollapsibleContent>
-              <CardContent className="pt-6">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="title"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-base font-semibold">Title *</FormLabel>
-                          <FormControl>
-                            <Input 
-                              placeholder="e.g., Electrical Maintenance - Building A" 
-                              {...field} 
-                              className="h-11"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-base font-semibold">Description *</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Provide detailed description of the work order requirements..." 
-                              rows={4} 
-                              {...field}
-                              className="resize-none"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="dueDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-base font-semibold">Due Date</FormLabel>
-                          <FormControl>
-                            <Input type="datetime-local" {...field} className="h-11" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <div className="pt-2">
-                      <Button 
-                        type="submit" 
-                        className="w-full h-12 text-base font-semibold" 
-                        disabled={createWorkOrder.isPending}
-                      >
-                        {createWorkOrder.isPending ? (
-                          <div className="flex items-center gap-2">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                            Creating...
-                          </div>
-                        ) : (
-                          <>
-                            <Plus className="h-5 w-5 mr-2" />
-                            Create Work Order
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
-              </CardContent>
-            </CollapsibleContent>
-          </Card>
-        </Collapsible>
 
         {/* Search and Filters */}
         <Card className="mb-8 shadow-md border-border/50">
@@ -204,13 +99,13 @@ const CompanyWorkOrders = () => {
               </div>
               <div className="w-full lg:w-64">
                 <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as WorkOrderStatus | "ALL")}>
-                  <SelectTrigger className="h-12 text-base">
+                  <SelectTrigger className="h-12 text-base bg-background">
                     <div className="flex items-center gap-2">
                       <Filter className="h-4 w-4" />
                       <SelectValue placeholder="Filter by status" />
                     </div>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-popover z-50">
                     <SelectItem value="ALL">All Statuses</SelectItem>
                     {Object.entries(WORK_ORDER_STATUS_LABELS).map(([value, label]) => (
                       <SelectItem key={value} value={value}>
@@ -234,9 +129,6 @@ const CompanyWorkOrders = () => {
                     <FileText className="h-8 w-8 text-destructive" />
                   </div>
                   <p className="text-destructive mb-6 font-medium">{error.message}</p>
-                  <Button onClick={() => refetch()} variant="outline">
-                    Retry Loading
-                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -278,7 +170,7 @@ const CompanyWorkOrders = () => {
                       : "Create your first work order to get started"}
                   </p>
                   {!searchQuery && statusFilter === "ALL" && (
-                    <Button onClick={() => setIsCreateOpen(true)} size="lg">
+                    <Button onClick={() => setWorkOrderFormOpen(true)} size="lg">
                       <Plus className="h-5 w-5 mr-2" />
                       Create Work Order
                     </Button>
@@ -325,14 +217,24 @@ const CompanyWorkOrders = () => {
                           <p className="text-sm font-semibold truncate">{formatDate(workOrder.dueDate)}</p>
                         </div>
                       </div>
-                      {workOrder.vendorId && (
+                      {workOrder.vendorId ? (
                         <div className="flex items-center gap-3 p-3 rounded-lg bg-background border">
                           <div className="p-2 rounded-md bg-accent/10">
                             <User className="h-4 w-4 text-accent" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs text-muted-foreground font-medium">Assignment</p>
+                            <p className="text-xs text-muted-foreground font-medium">Status</p>
                             <p className="text-sm font-semibold truncate">Vendor Assigned</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-background border border-dashed">
+                          <div className="p-2 rounded-md bg-muted">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground font-medium">Status</p>
+                            <p className="text-sm font-semibold truncate">Unassigned</p>
                           </div>
                         </div>
                       )}
@@ -348,6 +250,18 @@ const CompanyWorkOrders = () => {
                         </div>
                       )}
                     </div>
+                    <div className="flex gap-2 pt-2">
+                      {!workOrder.vendorId && (
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={(e) => handleAssignVendor(workOrder, e)}
+                        >
+                          <UserPlus className="mr-2 h-4 w-4" />
+                          Assign Vendor
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -355,6 +269,18 @@ const CompanyWorkOrders = () => {
           )}
         </div>
       </main>
+
+      <WorkOrderFormDialog
+        open={workOrderFormOpen}
+        onOpenChange={setWorkOrderFormOpen}
+      />
+
+      <VendorAssignDialog
+        open={assignDialogOpen}
+        onOpenChange={setAssignDialogOpen}
+        workOrderId={selectedWorkOrderId}
+        workOrderTitle={selectedWorkOrderTitle}
+      />
     </div>
   );
 };

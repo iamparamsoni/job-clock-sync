@@ -13,7 +13,12 @@ export const useCreateWorkOrder = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { title: string; description: string; dueDate?: string }) =>
+    mutationFn: (data: { 
+      title: string; 
+      description: string; 
+      dueDate?: string;
+      vendorId?: string;
+    }) =>
       api.createWorkOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["workOrders"] });
