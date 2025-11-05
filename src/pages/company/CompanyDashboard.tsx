@@ -92,7 +92,7 @@ const CompanyDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header userName={user?.name} onLogout={handleLogout} />
+      <Header user={user} onLogout={handleLogout} />
       <Navigation items={COMPANY_NAV_ITEMS} />
       
       <main className="container mx-auto px-6 py-8">

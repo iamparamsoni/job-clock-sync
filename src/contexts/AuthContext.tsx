@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { api, tokenStorage } from "@/lib/api";
 
-interface User {
+export interface User {
   id: string;
   email: string;
   name: string;
-  role: "vendor" | "company";
+  role: 'VENDOR' | 'COMPANY' | 'ADMIN';
+  active: boolean;
 }
 
 interface AuthContextType {
@@ -38,7 +39,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               id: currentUser.id,
               email: currentUser.email,
               name: currentUser.name,
-              role: currentUser.role.toLowerCase() as "vendor" | "company",
+              role: currentUser.role as 'VENDOR' | 'COMPANY' | 'ADMIN',
+              active: true, // Default to active if not provided
             });
           })
           .catch(() => {
@@ -60,11 +62,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.login(email, password);
       
-      const userData = {
+      const userData: User = {
         id: response.id,
         email: response.email,
         name: response.name,
-        role: response.role.toLowerCase() as "vendor" | "company",
+        role: response.role as 'VENDOR' | 'COMPANY' | 'ADMIN',
+        active: true,
       };
       
       setUser(userData);

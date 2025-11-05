@@ -17,7 +17,7 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate(user.role === "vendor" ? "/vendor/dashboard" : "/company/dashboard");
+      navigate(user.role === "VENDOR" ? "/vendor/dashboard" : "/company/dashboard");
     }
   }, [user, navigate]);
 
@@ -78,8 +78,8 @@ const Login = () => {
           </form>
           <div className="mt-6 space-y-2 rounded-lg bg-muted p-4 text-sm">
             <p className="font-medium">Demo Accounts:</p>
-            <p><strong>Vendor:</strong> vendor@hourglass.com</p>
-            <p><strong>Company:</strong> company@hourglass.com</p>
+            <p><strong>Vendor:</strong> vendor@example.com</p>
+            <p><strong>Company:</strong> company@example.com</p>
             <p className="text-muted-foreground">Password: password123</p>
           </div>
         </CardContent>

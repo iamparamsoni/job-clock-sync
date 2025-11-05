@@ -32,7 +32,7 @@ const App = () => (
             <Route
               path="/vendor/dashboard"
               element={
-                <ProtectedRoute allowedRole="vendor">
+                <ProtectedRoute allowedRoles={['VENDOR']}>
                   <VendorDashboard />
                 </ProtectedRoute>
               }
@@ -40,7 +40,7 @@ const App = () => (
             <Route
               path="/company/dashboard"
               element={
-                <ProtectedRoute allowedRole="company">
+                <ProtectedRoute allowedRoles={['COMPANY']}>
                   <CompanyDashboard />
                 </ProtectedRoute>
               }
@@ -48,7 +48,7 @@ const App = () => (
             <Route
               path="/vendor/work-orders"
               element={
-                <ProtectedRoute allowedRole="vendor">
+                <ProtectedRoute allowedRoles={['VENDOR']}>
                   <VendorWorkOrders />
                 </ProtectedRoute>
               }
@@ -56,7 +56,7 @@ const App = () => (
             <Route
               path="/company/work-orders"
               element={
-                <ProtectedRoute allowedRole="company">
+                <ProtectedRoute allowedRoles={['COMPANY']}>
                   <CompanyWorkOrders />
                 </ProtectedRoute>
               }
@@ -64,7 +64,7 @@ const App = () => (
             <Route
               path="/company/jobs"
               element={
-                <ProtectedRoute allowedRole="company">
+                <ProtectedRoute allowedRoles={['COMPANY']}>
                   <CompanyJobs />
                 </ProtectedRoute>
               }
@@ -72,7 +72,7 @@ const App = () => (
             <Route
               path="/company/timesheets"
               element={
-                <ProtectedRoute allowedRole="company">
+                <ProtectedRoute allowedRoles={['COMPANY']}>
                   <CompanyTimesheets />
                 </ProtectedRoute>
               }
@@ -80,7 +80,7 @@ const App = () => (
             <Route
               path="/company/invoices"
               element={
-                <ProtectedRoute allowedRole="company">
+                <ProtectedRoute allowedRoles={['COMPANY']}>
                   <CompanyInvoices />
                 </ProtectedRoute>
               }
@@ -88,7 +88,7 @@ const App = () => (
             <Route
               path="/vendor/jobs"
               element={
-                <ProtectedRoute allowedRole="vendor">
+                <ProtectedRoute allowedRoles={['VENDOR']}>
                   <VendorJobs />
                 </ProtectedRoute>
               }
@@ -96,7 +96,7 @@ const App = () => (
             <Route
               path="/vendor/timesheets"
               element={
-                <ProtectedRoute allowedRole="vendor">
+                <ProtectedRoute allowedRoles={['VENDOR']}>
                   <VendorTimesheets />
                 </ProtectedRoute>
               }
@@ -104,7 +104,7 @@ const App = () => (
             <Route
               path="/vendor/invoices"
               element={
-                <ProtectedRoute allowedRole="vendor">
+                <ProtectedRoute allowedRoles={['VENDOR']}>
                   <VendorInvoices />
                 </ProtectedRoute>
               }

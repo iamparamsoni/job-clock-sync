@@ -1,32 +1,70 @@
-import { Bell, ShoppingCart, User } from "lucide-react";
+import { LogOut, User as UserIcon, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { User } from "@/contexts/AuthContext";
 
 interface HeaderProps {
-  user?: any;
   userName?: string;
-  onLogout?: () => void;
+  user?: User | null;
+  onLogout: () => void;
 }
 
-export const Header = ({ userName, onLogout }: HeaderProps) => {
+const Header = ({ userName, user, onLogout }: HeaderProps) => {
+  const displayName = userName || user?.name || "User";
+
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-card">
-      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+    <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-2">
           <ShoppingCart className="h-6 w-6 text-primary" />
-          <span className="text-xl font-semibold text-foreground">Hourglass</span>
+          <span className="text-xl font-bold text-foreground">Hourglass</span>
         </div>
 
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            <Badge className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-destructive text-destructive-foreground">
-              3
-            </Badge>
-          </Button>
-          <Button variant="ghost" size="icon" onClick={onLogout}>
-            <User className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="flex items-center gap-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>{initials}</AvatarFallback>
+                </Avatar>
+                <span className="hidden md:inline-block">{displayName}</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>
+                <div className="flex flex-col gap-1">
+                  <span>{displayName}</span>
+                  {user && <span className="text-xs text-muted-foreground font-normal">{user.email}</span>}
+                  {user && <span className="text-xs text-muted-foreground font-normal capitalize">{user.role.toLowerCase()}</span>}
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <UserIcon className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={onLogout} className="text-destructive">
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
