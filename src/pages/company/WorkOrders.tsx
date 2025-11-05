@@ -21,11 +21,11 @@ import { useWorkOrders, useCreateWorkOrder } from "@/hooks/useWorkOrders";
 import { workOrderSchema, WorkOrderFormData } from "@/lib/validations";
 
 const COMPANY_NAV_ITEMS = [
-  { label: "Dashboard", path: "/company/dashboard" },
-  { label: "Post Jobs", path: "/company/post-jobs" },
-  { label: "Work Orders", path: "/company/work-orders" },
-  { label: "Invoices", path: "/company/invoices" },
-  { label: "Admin", path: "/company/admin" },
+  { name: "Dashboard", path: "/company/dashboard" },
+  { name: "Work Orders", path: "/company/work-orders" },
+  { name: "Jobs", path: "/company/jobs" },
+  { name: "Timesheets", path: "/company/timesheets" },
+  { name: "Invoices", path: "/company/invoices" },
 ];
 
 const CompanyWorkOrders = () => {

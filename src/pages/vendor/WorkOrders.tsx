@@ -14,10 +14,11 @@ import { WorkOrderStatus, WORK_ORDER_STATUS_LABELS, WORK_ORDER_STATUS_VARIANTS }
 import { useWorkOrders, useUpdateWorkOrderStatus } from "@/hooks/useWorkOrders";
 
 const VENDOR_NAV_ITEMS = [
-  { label: "Dashboard", path: "/vendor/dashboard" },
-  { label: "Apply Jobs", path: "/vendor/apply-jobs" },
-  { label: "Work Orders", path: "/vendor/work-orders" },
-  { label: "Invoices", path: "/vendor/invoices" },
+  { name: "Dashboard", path: "/vendor/dashboard" },
+  { name: "Work Orders", path: "/vendor/work-orders" },
+  { name: "Jobs", path: "/vendor/jobs" },
+  { name: "Timesheets", path: "/vendor/timesheets" },
+  { name: "Invoices", path: "/vendor/invoices" },
 ];
 
 const VendorWorkOrders = () => {

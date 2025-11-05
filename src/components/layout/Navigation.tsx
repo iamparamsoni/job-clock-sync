@@ -3,12 +3,12 @@ import { Link, useLocation } from "react-router-dom";
 
 interface NavigationProps {
   items: Array<{
-    label: string;
+    name: string;
     path: string;
   }>;
 }
 
-const Navigation = ({ items }: NavigationProps) => {
+export const Navigation = ({ items }: NavigationProps) => {
   const location = useLocation();
 
   return (
@@ -26,7 +26,7 @@ const Navigation = ({ items }: NavigationProps) => {
                   : "border-transparent text-muted-foreground"
               )}
             >
-              {item.label}
+              {item.name}
             </Link>
           ))}
         </div>

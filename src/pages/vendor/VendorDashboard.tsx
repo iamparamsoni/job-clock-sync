@@ -8,10 +8,11 @@ import { api } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 const VENDOR_NAV_ITEMS = [
-  { label: "Dashboard", path: "/vendor/dashboard" },
-  { label: "Apply Jobs", path: "/vendor/apply-jobs" },
-  { label: "Work Orders", path: "/vendor/work-orders" },
-  { label: "Invoices", path: "/vendor/invoices" },
+  { name: "Dashboard", path: "/vendor/dashboard" },
+  { name: "Work Orders", path: "/vendor/work-orders" },
+  { name: "Jobs", path: "/vendor/jobs" },
+  { name: "Timesheets", path: "/vendor/timesheets" },
+  { name: "Invoices", path: "/vendor/invoices" },
 ];
 
 const VendorDashboard = () => {

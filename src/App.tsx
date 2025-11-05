@@ -7,8 +7,14 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import VendorDashboard from "./pages/vendor/VendorDashboard";
 import VendorWorkOrders from "./pages/vendor/WorkOrders";
+import VendorJobs from "./pages/vendor/Jobs";
+import VendorTimesheets from "./pages/vendor/Timesheets";
+import VendorInvoices from "./pages/vendor/Invoices";
 import CompanyDashboard from "./pages/company/CompanyDashboard";
 import CompanyWorkOrders from "./pages/company/WorkOrders";
+import CompanyJobs from "./pages/company/Jobs";
+import CompanyTimesheets from "./pages/company/Timesheets";
+import CompanyInvoices from "./pages/company/Invoices";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -52,6 +58,54 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRole="company">
                   <CompanyWorkOrders />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/jobs"
+              element={
+                <ProtectedRoute allowedRole="company">
+                  <CompanyJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/timesheets"
+              element={
+                <ProtectedRoute allowedRole="company">
+                  <CompanyTimesheets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/invoices"
+              element={
+                <ProtectedRoute allowedRole="company">
+                  <CompanyInvoices />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/jobs"
+              element={
+                <ProtectedRoute allowedRole="vendor">
+                  <VendorJobs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/timesheets"
+              element={
+                <ProtectedRoute allowedRole="vendor">
+                  <VendorTimesheets />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/vendor/invoices"
+              element={
+                <ProtectedRoute allowedRole="vendor">
+                  <VendorInvoices />
                 </ProtectedRoute>
               }
             />

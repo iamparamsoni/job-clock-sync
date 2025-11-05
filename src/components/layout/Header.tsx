@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface HeaderProps {
+  user?: any;
   userName?: string;
   onLogout?: () => void;
 }
 
-const Header = ({ userName, onLogout }: HeaderProps) => {
+export const Header = ({ userName, onLogout }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card">
       <div className="container mx-auto flex h-16 items-center justify-between px-6">
