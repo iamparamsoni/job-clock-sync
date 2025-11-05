@@ -1,0 +1,1507 @@
+openapi: 3.0.3
+info:
+  title: Job Clock Sync API
+  version: 1.0.0
+  description: |
+    REST API for Job Clock Sync - A comprehensive vendor and company management system 
+    for job postings, work orders, timesheets, and invoices.
+    
+    ## Authentication
+    All endpoints except `/auth/login` require JWT Bearer token authentication.
+    
+    ## Roles
+    - **VENDOR**: Service providers who can apply for jobs, submit timesheets and invoices
+    - **COMPANY**: Organizations who can post jobs, create work orders, and approve submissions
+    
+  contact:
+    name: Hourglass Team
+    email: support@hourglass.com
+    url: https://hourglass.com
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8082/api
+    description: Local Development Server
+  - url: https://api.hourglass.com
+    description: Production Server
+
+tags:
+  - name: Authentication
+    description: Authentication and user management APIs
+  - name: Dashboard
+    description: Dashboard statistics APIs
+  - name: Work Orders
+    description: Work order management APIs
+  - name: Jobs
+    description: Job posting and application management APIs
+  - name: Timesheets
+    description: Timesheet management and approval APIs
+  - name: Invoices
+    description: Invoice management and payment APIs
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ============================================================================
+  # Authentication APIs
+  # ============================================================================
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate user
+      description: Login with email and password to receive a JWT token for subsequent API calls
+      operationId: login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: company@example.com
+              password: password123
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                id: 507f1f77bcf86cd799439011
+                email: company@example.com
+                name: Acme Corporation
+                role: COMPANY
+        '400':
+          description: Invalid credentials or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get current user
+      description: Get details of the currently authenticated user
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Successfully retrieved user details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  # ============================================================================
+  # Dashboard APIs
+  # ============================================================================
+  /dashboard/vendor/stats:
+    get:
+      tags:
+        - Dashboard
+      summary: Get vendor dashboard statistics
+      description: Get dashboard statistics for vendor users only
+      operationId: getVendorStats
+      responses:
+        '200':
+          description: Successfully retrieved vendor statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VendorDashboardStats'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  /dashboard/company/stats:
+    get:
+      tags:
+        - Dashboard
+      summary: Get company dashboard statistics
+      description: Get dashboard statistics for company users only
+      operationId: getCompanyStats
+      responses:
+        '200':
+          description: Successfully retrieved company statistics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyDashboardStats'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+  # ============================================================================
+  # Work Order APIs
+  # ============================================================================
+  /work-orders:
+    post:
+      tags:
+        - Work Orders
+      summary: Create work order
+      description: Create a new work order (Company only)
+      operationId: createWorkOrder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkOrderRequest'
+      responses:
+        '200':
+          description: Work order created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    get:
+      tags:
+        - Work Orders
+      summary: Get work orders
+      description: |
+        Get work orders based on user role:
+        - VENDOR: Returns work orders assigned to vendor
+        - COMPANY: Returns work orders created by company
+      operationId: getWorkOrders
+      responses:
+        '200':
+          description: Successfully retrieved work orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkOrderResponse'
+
+  /work-orders/{id}/status:
+    put:
+      tags:
+        - Work Orders
+      summary: Update work order status
+      description: Update the status of a work order
+      operationId: updateWorkOrderStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Work order ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: true
+          description: New status for the work order
+          schema:
+            $ref: '#/components/schemas/WorkOrderStatus'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderResponse'
+        '400':
+          description: Invalid status value
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /work-orders/{id}/assign:
+    put:
+      tags:
+        - Work Orders
+      summary: Assign work order to vendor
+      description: Assign a work order to a vendor (Company only)
+      operationId: assignWorkOrder
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Work order ID
+          schema:
+            type: string
+        - name: vendorId
+          in: query
+          required: true
+          description: Vendor user ID to assign
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Work order assigned successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkOrderResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================================
+  # Job APIs
+  # ============================================================================
+  /jobs:
+    post:
+      tags:
+        - Jobs
+      summary: Create job posting
+      description: Create a new job posting (Company only)
+      operationId: createJob
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+      responses:
+        '200':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    get:
+      tags:
+        - Jobs
+      summary: Get jobs
+      description: |
+        Get jobs based on user role:
+        - VENDOR: Returns open jobs available for application
+        - COMPANY: Returns jobs created by the company
+      operationId: getJobs
+      responses:
+        '200':
+          description: Successfully retrieved jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobResponse'
+
+  /jobs/{id}:
+    put:
+      tags:
+        - Jobs
+      summary: Update job
+      description: Update job details (Company only)
+      operationId: updateJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobRequest'
+      responses:
+        '200':
+          description: Job updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /jobs/{id}/status:
+    put:
+      tags:
+        - Jobs
+      summary: Update job status
+      description: Update the status of a job (Company only)
+      operationId: updateJobStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: true
+          description: New status for the job
+          schema:
+            $ref: '#/components/schemas/JobStatus'
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '400':
+          description: Invalid status value
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /jobs/{id}/apply:
+    post:
+      tags:
+        - Jobs
+      summary: Apply for job
+      description: Vendor applies for a job posting
+      operationId: applyForJob
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Job ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Application submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================================
+  # Timesheet APIs
+  # ============================================================================
+  /timesheets:
+    post:
+      tags:
+        - Timesheets
+      summary: Create timesheet
+      description: Create a new timesheet (Vendor only)
+      operationId: createTimesheet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TimesheetRequest'
+      responses:
+        '200':
+          description: Timesheet created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimesheetResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    get:
+      tags:
+        - Timesheets
+      summary: Get timesheets
+      description: |
+        Get timesheets based on user role:
+        - VENDOR: Returns timesheets created by vendor
+        - COMPANY: Returns timesheets for company's work orders
+      operationId: getTimesheets
+      responses:
+        '200':
+          description: Successfully retrieved timesheets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TimesheetResponse'
+
+  /timesheets/{id}/submit:
+    post:
+      tags:
+        - Timesheets
+      summary: Submit timesheet
+      description: Submit timesheet for approval (Vendor only)
+      operationId: submitTimesheet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Timesheet ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Timesheet submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimesheetResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /timesheets/{id}/approve:
+    post:
+      tags:
+        - Timesheets
+      summary: Approve timesheet
+      description: Approve a submitted timesheet (Company only)
+      operationId: approveTimesheet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Timesheet ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Timesheet approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimesheetResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /timesheets/{id}/reject:
+    post:
+      tags:
+        - Timesheets
+      summary: Reject timesheet
+      description: Reject a submitted timesheet (Company only)
+      operationId: rejectTimesheet
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Timesheet ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Timesheet rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TimesheetResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # ============================================================================
+  # Invoice APIs
+  # ============================================================================
+  /invoices:
+    post:
+      tags:
+        - Invoices
+      summary: Create invoice
+      description: Create a new invoice (Vendor only)
+      operationId: createInvoice
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceRequest'
+      responses:
+        '200':
+          description: Invoice created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+
+    get:
+      tags:
+        - Invoices
+      summary: Get invoices
+      description: |
+        Get invoices based on user role:
+        - VENDOR: Returns invoices created by vendor
+        - COMPANY: Returns invoices for the company
+      operationId: getInvoices
+      responses:
+        '200':
+          description: Successfully retrieved invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InvoiceResponse'
+
+  /invoices/{id}/submit:
+    post:
+      tags:
+        - Invoices
+      summary: Submit invoice
+      description: Submit invoice for approval (Vendor only)
+      operationId: submitInvoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice submitted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /invoices/{id}/approve:
+    post:
+      tags:
+        - Invoices
+      summary: Approve invoice
+      description: Approve a submitted invoice (Company only)
+      operationId: approveInvoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice approved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /invoices/{id}/reject:
+    post:
+      tags:
+        - Invoices
+      summary: Reject invoice
+      description: Reject a submitted invoice (Company only)
+      operationId: rejectInvoice
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice rejected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  /invoices/{id}/pay:
+    post:
+      tags:
+        - Invoices
+      summary: Mark invoice as paid
+      description: Mark an approved invoice as paid (Company only)
+      operationId: markInvoiceAsPaid
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Invoice ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invoice marked as paid successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoiceResponse'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+# ==============================================================================
+# Components
+# ==============================================================================
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT Bearer Token Authentication. 
+        Login via /auth/login to get a token, then include it in the Authorization header as 'Bearer {token}'
+
+  responses:
+    UnauthorizedError:
+      description: Unauthorized - Invalid or missing authentication token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: '2025-11-05T10:30:00Z'
+            status: 401
+            error: Unauthorized
+            message: Invalid or expired token
+            path: /api/work-orders
+
+    ForbiddenError:
+      description: Forbidden - User does not have permission to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: '2025-11-05T10:30:00Z'
+            status: 403
+            error: Forbidden
+            message: Access denied
+            path: /api/work-orders
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            timestamp: '2025-11-05T10:30:00Z'
+            status: 404
+            error: Not Found
+            message: Resource not found
+            path: /api/work-orders/123
+
+  schemas:
+    # ==========================================================================
+    # Authentication Schemas
+    # ==========================================================================
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: company@example.com
+        password:
+          type: string
+          format: password
+          description: User password
+          example: password123
+
+    LoginResponse:
+      type: object
+      required:
+        - token
+        - id
+        - email
+        - name
+        - role
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        id:
+          type: string
+          description: User ID
+          example: 507f1f77bcf86cd799439011
+        email:
+          type: string
+          format: email
+          description: User email
+          example: company@example.com
+        name:
+          type: string
+          description: User or company name
+          example: Acme Corporation
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    User:
+      type: object
+      required:
+        - id
+        - email
+        - name
+        - role
+        - active
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: User ID
+          example: 507f1f77bcf86cd799439011
+        email:
+          type: string
+          format: email
+          description: User email address
+          example: company@example.com
+        name:
+          type: string
+          description: User or company name
+          example: Acme Corporation
+        role:
+          $ref: '#/components/schemas/UserRole'
+        active:
+          type: boolean
+          description: Whether the user account is active
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+          description: Account creation timestamp
+          example: '2025-01-01T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-11-05T10:30:00Z'
+
+    UserRole:
+      type: string
+      enum:
+        - VENDOR
+        - COMPANY
+      description: |
+        User role in the system:
+        - VENDOR: Service provider who can apply for jobs and submit timesheets/invoices
+        - COMPANY: Organization who can post jobs and approve submissions
+
+    # ==========================================================================
+    # Dashboard Schemas
+    # ==========================================================================
+    VendorDashboardStats:
+      type: object
+      properties:
+        activeJobs:
+          type: integer
+          description: Number of active jobs the vendor is working on
+          example: 5
+        workOrdersInProgress:
+          type: integer
+          description: Number of work orders currently in progress
+          example: 3
+        totalHours:
+          type: number
+          format: double
+          description: Total hours logged across all timesheets
+          example: 120.5
+        pendingInvoicesAmount:
+          type: number
+          format: double
+          description: Total amount of pending invoices
+          example: 15000.00
+
+    CompanyDashboardStats:
+      type: object
+      properties:
+        activeVendors:
+          type: integer
+          description: Number of active vendors
+          example: 12
+        openPositions:
+          type: integer
+          description: Number of open job positions
+          example: 8
+        workOrdersInProgressCompany:
+          type: integer
+          description: Number of work orders in progress
+          example: 15
+        monthlySpend:
+          type: number
+          format: double
+          description: Total monthly spending on invoices
+          example: 85000.00
+
+    # ==========================================================================
+    # Work Order Schemas
+    # ==========================================================================
+    WorkOrderRequest:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          description: Work order title
+          example: Website Maintenance
+          minLength: 1
+        description:
+          type: string
+          description: Detailed description of the work order
+          example: Monthly website maintenance and updates
+          minLength: 1
+        dueDate:
+          type: string
+          format: date-time
+          description: Due date for the work order
+          example: '2025-12-31T23:59:59Z'
+        vendorId:
+          type: string
+          description: Optional vendor ID to assign immediately
+          example: 507f1f77bcf86cd799439012
+
+    WorkOrderResponse:
+      type: object
+      required:
+        - id
+        - workOrderNumber
+        - title
+        - description
+        - companyId
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Work order ID
+          example: 507f1f77bcf86cd799439013
+        workOrderNumber:
+          type: string
+          description: Unique work order number
+          example: WO-1730123456
+        title:
+          type: string
+          description: Work order title
+          example: Website Maintenance
+        description:
+          type: string
+          description: Work order description
+          example: Monthly website maintenance and updates
+        companyId:
+          type: string
+          description: Company that created the work order
+          example: 507f1f77bcf86cd799439011
+        vendorId:
+          type: string
+          nullable: true
+          description: Assigned vendor ID
+          example: 507f1f77bcf86cd799439012
+        status:
+          $ref: '#/components/schemas/WorkOrderStatus'
+        assignedDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Date when work order was assigned
+          example: '2025-11-01T10:00:00Z'
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Due date
+          example: '2025-12-31T23:59:59Z'
+        completedDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Completion date
+          example: '2025-11-15T16:30:00Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: '2025-11-01T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-11-05T10:30:00Z'
+
+    WorkOrderStatus:
+      type: string
+      enum:
+        - DRAFT
+        - OPEN
+        - ASSIGNED
+        - IN_PROGRESS
+        - COMPLETED
+        - CANCELLED
+      description: |
+        Work order status:
+        - DRAFT: Work order is being drafted
+        - OPEN: Work order is open for assignment
+        - ASSIGNED: Work order has been assigned to a vendor
+        - IN_PROGRESS: Work is in progress
+        - COMPLETED: Work has been completed
+        - CANCELLED: Work order was cancelled
+
+    # ==========================================================================
+    # Job Schemas
+    # ==========================================================================
+    JobRequest:
+      type: object
+      required:
+        - title
+        - description
+        - location
+        - employmentType
+      properties:
+        title:
+          type: string
+          description: Job title
+          example: Senior Full Stack Developer
+          minLength: 1
+        description:
+          type: string
+          description: Job description and requirements
+          example: Looking for an experienced full stack developer...
+          minLength: 1
+        location:
+          type: string
+          description: Job location
+          example: New York, NY
+          minLength: 1
+        employmentType:
+          type: string
+          description: Type of employment
+          example: FULL_TIME
+          enum:
+            - FULL_TIME
+            - PART_TIME
+            - CONTRACT
+        requiredSkills:
+          type: array
+          items:
+            type: string
+          description: List of required skills
+          example: ["JavaScript", "React", "Node.js", "MongoDB"]
+        salaryMin:
+          type: number
+          format: double
+          description: Minimum salary
+          example: 80000.00
+        salaryMax:
+          type: number
+          format: double
+          description: Maximum salary
+          example: 120000.00
+
+    JobResponse:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - companyId
+        - status
+        - location
+        - employmentType
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Job ID
+          example: 507f1f77bcf86cd799439014
+        title:
+          type: string
+          description: Job title
+          example: Senior Full Stack Developer
+        description:
+          type: string
+          description: Job description
+          example: Looking for an experienced full stack developer...
+        companyId:
+          type: string
+          description: Company that posted the job
+          example: 507f1f77bcf86cd799439011
+        status:
+          $ref: '#/components/schemas/JobStatus'
+        requiredSkills:
+          type: array
+          items:
+            type: string
+          description: List of required skills
+          example: ["JavaScript", "React", "Node.js", "MongoDB"]
+        location:
+          type: string
+          description: Job location
+          example: New York, NY
+        salaryMin:
+          type: number
+          format: double
+          nullable: true
+          description: Minimum salary
+          example: 80000.00
+        salaryMax:
+          type: number
+          format: double
+          nullable: true
+          description: Maximum salary
+          example: 120000.00
+        employmentType:
+          type: string
+          description: Type of employment
+          example: FULL_TIME
+        applicantIds:
+          type: array
+          items:
+            type: string
+          description: List of vendor IDs who applied
+          example: ["507f1f77bcf86cd799439015", "507f1f77bcf86cd799439016"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: '2025-11-01T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-11-05T10:30:00Z'
+
+    JobStatus:
+      type: string
+      enum:
+        - DRAFT
+        - OPEN
+        - CLOSED
+        - FILLED
+      description: |
+        Job status:
+        - DRAFT: Job is being drafted
+        - OPEN: Job is open for applications
+        - CLOSED: Job is closed, not accepting applications
+        - FILLED: Position has been filled
+
+    # ==========================================================================
+    # Timesheet Schemas
+    # ==========================================================================
+    TimesheetRequest:
+      type: object
+      required:
+        - workOrderId
+        - weekStartDate
+        - weekEndDate
+        - entries
+      properties:
+        workOrderId:
+          type: string
+          description: Associated work order ID
+          example: 507f1f77bcf86cd799439013
+        weekStartDate:
+          type: string
+          format: date
+          description: Week start date (YYYY-MM-DD)
+          example: '2025-11-01'
+        weekEndDate:
+          type: string
+          format: date
+          description: Week end date (YYYY-MM-DD)
+          example: '2025-11-07'
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimesheetEntryRequest'
+          description: List of timesheet entries
+          minItems: 1
+        notes:
+          type: string
+          description: Additional notes
+          example: Completed initial setup and testing
+
+    TimesheetEntryRequest:
+      type: object
+      required:
+        - date
+        - hours
+        - description
+        - workOrderId
+      properties:
+        date:
+          type: string
+          format: date
+          description: Entry date (YYYY-MM-DD)
+          example: '2025-11-01'
+        hours:
+          type: number
+          format: double
+          description: Hours worked
+          example: 8.0
+          minimum: 0
+        description:
+          type: string
+          description: Work description
+          example: Initial setup and configuration
+          minLength: 1
+        workOrderId:
+          type: string
+          description: Associated work order ID
+          example: 507f1f77bcf86cd799439013
+
+    TimesheetResponse:
+      type: object
+      required:
+        - id
+        - vendorId
+        - companyId
+        - workOrderId
+        - status
+        - weekStartDate
+        - weekEndDate
+        - entries
+        - totalHours
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Timesheet ID
+          example: 507f1f77bcf86cd799439017
+        vendorId:
+          type: string
+          description: Vendor who submitted the timesheet
+          example: 507f1f77bcf86cd799439012
+        companyId:
+          type: string
+          description: Company that will approve the timesheet
+          example: 507f1f77bcf86cd799439011
+        workOrderId:
+          type: string
+          description: Associated work order
+          example: 507f1f77bcf86cd799439013
+        status:
+          $ref: '#/components/schemas/TimesheetStatus'
+        weekStartDate:
+          type: string
+          format: date
+          description: Week start date
+          example: '2025-11-01'
+        weekEndDate:
+          type: string
+          format: date
+          description: Week end date
+          example: '2025-11-07'
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimesheetEntryResponse'
+          description: List of timesheet entries
+        totalHours:
+          type: number
+          format: double
+          description: Total hours across all entries
+          example: 40.0
+        notes:
+          type: string
+          nullable: true
+          description: Additional notes
+          example: Completed initial setup and testing
+        submittedDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Submission timestamp
+          example: '2025-11-08T09:00:00Z'
+        approvedDate:
+          type: string
+          format: date-time
+          nullable: true
+          description: Approval timestamp
+          example: '2025-11-09T14:30:00Z'
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: '2025-11-05T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-11-08T09:00:00Z'
+
+    TimesheetEntryResponse:
+      type: object
+      required:
+        - date
+        - hours
+        - description
+        - workOrderId
+      properties:
+        date:
+          type: string
+          format: date
+          description: Entry date
+          example: '2025-11-01'
+        hours:
+          type: number
+          format: double
+          description: Hours worked
+          example: 8.0
+        description:
+          type: string
+          description: Work description
+          example: Initial setup and configuration
+        workOrderId:
+          type: string
+          description: Associated work order ID
+          example: 507f1f77bcf86cd799439013
+
+    TimesheetStatus:
+      type: string
+      enum:
+        - DRAFT
+        - SUBMITTED
+        - APPROVED
+        - REJECTED
+      description: |
+        Timesheet status:
+        - DRAFT: Timesheet is being drafted
+        - SUBMITTED: Timesheet submitted for approval
+        - APPROVED: Timesheet approved by company
+        - REJECTED: Timesheet rejected by company
+
+    # ==========================================================================
+    # Invoice Schemas
+    # ==========================================================================
+    InvoiceRequest:
+      type: object
+      required:
+        - workOrderId
+        - items
+      properties:
+        workOrderId:
+          type: string
+          description: Associated work order ID
+          example: 507f1f77bcf86cd799439013
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItemRequest'
+          description: List of invoice items
+          minItems: 1
+        dueDate:
+          type: string
+          format: date
+          description: Payment due date (YYYY-MM-DD)
+          example: '2025-12-31'
+
+    InvoiceItemRequest:
+      type: object
+      required:
+        - description
+        - quantity
+        - unitPrice
+      properties:
+        description:
+          type: string
+          description: Item description
+          example: Website development services
+          minLength: 1
+        quantity:
+          type: integer
+          description: Item quantity
+          example: 40
+          minimum: 1
+        unitPrice:
+          type: number
+          format: double
+          description: Price per unit
+          example: 125.00
+          minimum: 0
+
+    InvoiceResponse:
+      type: object
+      required:
+        - id
+        - invoiceNumber
+        - vendorId
+        - companyId
+        - workOrderId
+        - status
+        - totalAmount
+        - taxAmount
+        - subtotal
+        - items
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Invoice ID
+          example: 507f1f77bcf86cd799439018
+        invoiceNumber:
+          type: string
+          description: Unique invoice number
+          example: INV-1730123456
+        vendorId:
+          type: string
+          description: Vendor who created the invoice
+          example: 507f1f77bcf86cd799439012
+        companyId:
+          type: string
+          description: Company that will pay the invoice
+          example: 507f1f77bcf86cd799439011
+        workOrderId:
+          type: string
+          description: Associated work order
+          example: 507f1f77bcf86cd799439013
+        status:
+          $ref: '#/components/schemas/InvoiceStatus'
+        totalAmount:
+          type: number
+          format: double
+          description: Total invoice amount (including tax)
+          example: 5400.00
+        taxAmount:
+          type: number
+          format: double
+          description: Tax amount
+          example: 400.00
+        subtotal:
+          type: number
+          format: double
+          description: Subtotal (before tax)
+          example: 5000.00
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/InvoiceItemResponse'
+          description: List of invoice items
+        dueDate:
+          type: string
+          format: date
+          nullable: true
+          description: Payment due date
+          example: '2025-12-31'
+        paidDate:
+          type: string
+          format: date
+          nullable: true
+          description: Payment date
+          example: '2025-12-15'
+        createdAt:
+          type: string
+          format: date-time
+          description: Creation timestamp
+          example: '2025-11-08T10:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+          example: '2025-11-09T14:30:00Z'
+
+    InvoiceItemResponse:
+      type: object
+      required:
+        - description
+        - quantity
+        - unitPrice
+        - total
+      properties:
+        description:
+          type: string
+          description: Item description
+          example: Website development services
+        quantity:
+          type: integer
+          description: Item quantity
+          example: 40
+        unitPrice:
+          type: number
+          format: double
+          description: Price per unit
+          example: 125.00
+        total:
+          type: number
+          format: double
+          description: Item total (quantity * unitPrice)
+          example: 5000.00
+
+    InvoiceStatus:
+      type: string
+      enum:
+        - DRAFT
+        - PENDING
+        - APPROVED
+        - PAID
+        - REJECTED
+      description: |
+        Invoice status:
+        - DRAFT: Invoice is being drafted
+        - PENDING: Invoice submitted for approval
+        - APPROVED: Invoice approved, awaiting payment
+        - PAID: Invoice has been paid
+        - REJECTED: Invoice rejected by company
+
+    # ==========================================================================
+    # Error Schema
+    # ==========================================================================
+    Error:
+      type: object
+      required:
+        - timestamp
+        - status
+        - error
+        - message
+        - path
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+          example: '2025-11-05T10:30:00Z'
+        status:
+          type: integer
+          description: HTTP status code
+          example: 400
+        error:
+          type: string
+          description: Error type
+          example: Bad Request
+        message:
+          type: string
+          description: Error message
+          example: Validation failed
+        path:
+          type: string
+          description: Request path that caused the error
+          example: /api/work-orders
+
