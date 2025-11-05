@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, DollarSign, FileText, Calendar } from "lucide-react";
-import { INVOICE_STATUS_LABELS } from "@/types/invoice";
+import { Plus, DollarSign, FileText, Calendar, Send } from "lucide-react";
+import { INVOICE_STATUS_LABELS, Invoice } from "@/types/invoice";
 import { format } from "date-fns";
+import { useInvoices, useSubmitInvoice } from "@/hooks/useInvoices";
 
 const VENDOR_NAV_ITEMS = [
   { name: "Dashboard", path: "/vendor/dashboard" },
@@ -24,9 +25,8 @@ export default function VendorInvoices() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const invoices = [];
+  const { data: invoices = [], isLoading } = useInvoices();
+  const submitInvoice = useSubmitInvoice();
 
   const handleLogout = () => {
     navigate("/");
@@ -103,7 +103,11 @@ export default function VendorInvoices() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {invoices.map((invoice: any) => (
+            {invoices
+              .filter((invoice) =>
+                statusFilter === "ALL" ? true : invoice.status === statusFilter
+              )
+              .map((invoice: Invoice) => (
               <Card key={invoice.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
@@ -140,6 +144,18 @@ export default function VendorInvoices() {
                       <DollarSign className="mr-2 h-4 w-4" />
                       Paid: {formatDate(invoice.paidDate)}
                     </div>
+                  )}
+                  
+                  {invoice.status === "DRAFT" && (
+                    <Button 
+                      className="w-full mt-2" 
+                      size="sm"
+                      onClick={() => submitInvoice.mutate(invoice.id)}
+                      disabled={submitInvoice.isPending}
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit Invoice
+                    </Button>
                   )}
                 </CardContent>
               </Card>

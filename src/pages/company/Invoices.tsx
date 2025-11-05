@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Search, DollarSign, FileText, Calendar, CheckCircle, XCircle } from "lucide-react";
-import { INVOICE_STATUS_LABELS } from "@/types/invoice";
+import { INVOICE_STATUS_LABELS, Invoice } from "@/types/invoice";
 import { format } from "date-fns";
+import { useInvoices, useApproveInvoice, useRejectInvoice, useMarkInvoiceAsPaid } from "@/hooks/useInvoices";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -26,9 +27,10 @@ export default function CompanyInvoices() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const invoices = [];
+  const { data: invoices = [], isLoading } = useInvoices();
+  const approveInvoice = useApproveInvoice();
+  const rejectInvoice = useRejectInvoice();
+  const markAsPaid = useMarkInvoiceAsPaid();
 
   const handleLogout = () => {
     navigate("/");
@@ -108,7 +110,16 @@ export default function CompanyInvoices() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {invoices.map((invoice: any) => (
+            {invoices
+              .filter((invoice) =>
+                statusFilter === "ALL" ? true : invoice.status === statusFilter
+              )
+              .filter((invoice) =>
+                searchQuery
+                  ? invoice.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase())
+                  : true
+              )
+              .map((invoice: Invoice) => (
               <Card key={invoice.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -172,11 +183,21 @@ export default function CompanyInvoices() {
 
                   {invoice.status === "PENDING" && (
                     <div className="flex gap-2">
-                      <Button variant="default" className="flex-1">
+                      <Button 
+                        variant="default" 
+                        className="flex-1"
+                        onClick={() => approveInvoice.mutate(invoice.id)}
+                        disabled={approveInvoice.isPending}
+                      >
                         <CheckCircle className="mr-2 h-4 w-4" />
                         Approve
                       </Button>
-                      <Button variant="destructive" className="flex-1">
+                      <Button 
+                        variant="destructive" 
+                        className="flex-1"
+                        onClick={() => rejectInvoice.mutate(invoice.id)}
+                        disabled={rejectInvoice.isPending}
+                      >
                         <XCircle className="mr-2 h-4 w-4" />
                         Reject
                       </Button>
@@ -184,7 +205,12 @@ export default function CompanyInvoices() {
                   )}
 
                   {invoice.status === "APPROVED" && (
-                    <Button variant="default" className="w-full">
+                    <Button 
+                      variant="default" 
+                      className="w-full"
+                      onClick={() => markAsPaid.mutate(invoice.id)}
+                      disabled={markAsPaid.isPending}
+                    >
                       <DollarSign className="mr-2 h-4 w-4" />
                       Mark as Paid
                     </Button>

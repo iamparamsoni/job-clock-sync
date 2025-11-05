@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Clock, Calendar, FileText } from "lucide-react";
-import { TIMESHEET_STATUS_LABELS } from "@/types/timesheet";
+import { Plus, Clock, Calendar, FileText, Send } from "lucide-react";
+import { TIMESHEET_STATUS_LABELS, Timesheet } from "@/types/timesheet";
 import { format } from "date-fns";
+import { useTimesheets, useSubmitTimesheet } from "@/hooks/useTimesheets";
 
 const VENDOR_NAV_ITEMS = [
   { name: "Dashboard", path: "/vendor/dashboard" },
@@ -24,9 +25,8 @@ export default function VendorTimesheets() {
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const timesheets = [];
+  const { data: timesheets = [], isLoading } = useTimesheets();
+  const submitTimesheet = useSubmitTimesheet();
 
   const handleLogout = () => {
     navigate("/");
@@ -96,7 +96,11 @@ export default function VendorTimesheets() {
           </Card>
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {timesheets.map((timesheet: any) => (
+            {timesheets
+              .filter((timesheet) =>
+                statusFilter === "ALL" ? true : timesheet.status === statusFilter
+              )
+              .map((timesheet: Timesheet) => (
               <Card key={timesheet.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex justify-between items-start mb-2">
@@ -125,6 +129,18 @@ export default function VendorTimesheets() {
                     <p className="text-xs text-muted-foreground">
                       Approved: {formatDate(timesheet.approvedDate)}
                     </p>
+                  )}
+                  
+                  {timesheet.status === "DRAFT" && (
+                    <Button 
+                      className="w-full mt-2" 
+                      size="sm"
+                      onClick={() => submitTimesheet.mutate(timesheet.id)}
+                      disabled={submitTimesheet.isPending}
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      Submit for Approval
+                    </Button>
                   )}
                 </CardContent>
               </Card>

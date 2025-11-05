@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Briefcase, MapPin, DollarSign, Clock } from "lucide-react";
-import { JOB_STATUS_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/types/job";
+import { JOB_STATUS_LABELS, EMPLOYMENT_TYPE_LABELS, Job } from "@/types/job";
+import { useJobs, useApplyForJob } from "@/hooks/useJobs";
 
 const VENDOR_NAV_ITEMS = [
   { name: "Dashboard", path: "/vendor/dashboard" },
@@ -25,9 +26,8 @@ export default function VendorJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const jobs = [];
+  const { data: jobs = [], isLoading } = useJobs();
+  const applyForJob = useApplyForJob();
 
   const handleLogout = () => {
     navigate("/");
@@ -96,7 +96,21 @@ export default function VendorJobs() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {jobs.map((job: any) => (
+            {jobs
+              .filter((job) =>
+                filterType === "ALL" ? true : job.employmentType === filterType
+              )
+              .filter((job) =>
+                searchQuery
+                  ? job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    job.requiredSkills?.some((skill) =>
+                      skill.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                  : true
+              )
+              .map((job: Job) => (
               <Card key={job.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -136,7 +150,13 @@ export default function VendorJobs() {
                         ))}
                       </div>
                     </div>
-                    <Button className="w-full">Apply for this Position</Button>
+                    <Button 
+                      className="w-full"
+                      onClick={() => applyForJob.mutate(job.id)}
+                      disabled={job.applicantIds?.includes(user?.id || "")}
+                    >
+                      {job.applicantIds?.includes(user?.id || "") ? "Applied" : "Apply for this Position"}
+                    </Button>
                   </div>
                 </CardContent>
               </Card>

@@ -9,8 +9,9 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Search, Clock, Calendar, FileText, CheckCircle, XCircle } from "lucide-react";
-import { TIMESHEET_STATUS_LABELS } from "@/types/timesheet";
+import { TIMESHEET_STATUS_LABELS, Timesheet } from "@/types/timesheet";
 import { format } from "date-fns";
+import { useTimesheets, useApproveTimesheet, useRejectTimesheet } from "@/hooks/useTimesheets";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -26,9 +27,9 @@ export default function CompanyTimesheets() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const timesheets = [];
+  const { data: timesheets = [], isLoading } = useTimesheets();
+  const approveTimesheet = useApproveTimesheet();
+  const rejectTimesheet = useRejectTimesheet();
 
   const handleLogout = () => {
     navigate("/");
@@ -101,7 +102,11 @@ export default function CompanyTimesheets() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {timesheets.map((timesheet: any) => (
+            {timesheets
+              .filter((timesheet) =>
+                statusFilter === "ALL" ? true : timesheet.status === statusFilter
+              )
+              .map((timesheet: Timesheet) => (
               <Card key={timesheet.id} className="hover:shadow-md transition-shadow">
                 <CardHeader>
                   <div className="flex justify-between items-start">
@@ -136,11 +141,21 @@ export default function CompanyTimesheets() {
 
                   {timesheet.status === "SUBMITTED" && (
                     <div className="flex gap-2">
-                      <Button variant="default" className="flex-1">
+                      <Button 
+                        variant="default" 
+                        className="flex-1"
+                        onClick={() => approveTimesheet.mutate(timesheet.id)}
+                        disabled={approveTimesheet.isPending}
+                      >
                         <CheckCircle className="mr-2 h-4 w-4" />
                         Approve
                       </Button>
-                      <Button variant="destructive" className="flex-1">
+                      <Button 
+                        variant="destructive" 
+                        className="flex-1"
+                        onClick={() => rejectTimesheet.mutate(timesheet.id)}
+                        disabled={rejectTimesheet.isPending}
+                      >
                         <XCircle className="mr-2 h-4 w-4" />
                         Reject
                       </Button>

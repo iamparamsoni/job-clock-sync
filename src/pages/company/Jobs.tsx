@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Plus, Search, Briefcase, MapPin, DollarSign, Users } from "lucide-react";
-import { JOB_STATUS_LABELS, EMPLOYMENT_TYPE_LABELS } from "@/types/job";
+import { JOB_STATUS_LABELS, EMPLOYMENT_TYPE_LABELS, Job } from "@/types/job";
+import { useJobs, useUpdateJobStatus } from "@/hooks/useJobs";
 
 const COMPANY_NAV_ITEMS = [
   { name: "Dashboard", path: "/company/dashboard" },
@@ -25,9 +26,8 @@ export default function CompanyJobs() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  // TODO: Replace with actual API call
-  const isLoading = false;
-  const jobs = [];
+  const { data: jobs = [], isLoading } = useJobs();
+  const updateJobStatus = useUpdateJobStatus();
 
   const handleLogout = () => {
     navigate("/");
@@ -106,7 +106,17 @@ export default function CompanyJobs() {
           </Card>
         ) : (
           <div className="space-y-4">
-            {jobs.map((job: any) => (
+            {jobs
+              .filter((job) =>
+                statusFilter === "ALL" ? true : job.status === statusFilter
+              )
+              .filter((job) =>
+                searchQuery
+                  ? job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    job.description.toLowerCase().includes(searchQuery.toLowerCase())
+                  : true
+              )
+              .map((job: Job) => (
               <Card key={job.id} className="hover:shadow-md transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex justify-between items-start">
