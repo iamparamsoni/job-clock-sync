@@ -87,38 +87,46 @@ const CompanyWorkOrders = () => {
       <Header userName={user?.name} onLogout={handleLogout} />
       <Navigation items={COMPANY_NAV_ITEMS} />
 
-      <main className="container mx-auto px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-foreground">Work Orders</h1>
-          <p className="text-muted-foreground mt-2">Manage and track all work orders</p>
+      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 max-w-7xl">
+        <div className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">Work Orders</h1>
+          <p className="text-muted-foreground mt-2 text-base sm:text-lg">Manage and track all work orders seamlessly</p>
         </div>
 
         {/* Create Work Order Form */}
-        <Collapsible open={isCreateOpen} onOpenChange={setIsCreateOpen} className="mb-6">
-          <Card>
-            <CardHeader>
+        <Collapsible open={isCreateOpen} onOpenChange={setIsCreateOpen} className="mb-8">
+          <Card className="border-2 border-primary/10 shadow-lg">
+            <CardHeader className="border-b bg-gradient-to-r from-primary/5 to-accent/5">
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" className="w-full justify-between p-6 h-auto">
-                  <div className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" />
-                    <CardTitle>Create New Work Order</CardTitle>
+                <Button variant="ghost" className="w-full justify-between p-6 h-auto hover:bg-transparent">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                      <Plus className="h-5 w-5 text-primary" />
+                    </div>
+                    <CardTitle className="text-xl">Create New Work Order</CardTitle>
                   </div>
-                  <span className="text-muted-foreground">{isCreateOpen ? "Hide" : "Show"}</span>
+                  <Badge variant="secondary" className="font-normal">
+                    {isCreateOpen ? "Hide Form" : "Show Form"}
+                  </Badge>
                 </Button>
               </CollapsibleTrigger>
             </CardHeader>
             <CollapsibleContent>
-              <CardContent>
+              <CardContent className="pt-6">
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
                       control={form.control}
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Title *</FormLabel>
+                          <FormLabel className="text-base font-semibold">Title *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Enter work order title" {...field} />
+                            <Input 
+                              placeholder="e.g., Electrical Maintenance - Building A" 
+                              {...field} 
+                              className="h-11"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -129,9 +137,14 @@ const CompanyWorkOrders = () => {
                       name="description"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Description *</FormLabel>
+                          <FormLabel className="text-base font-semibold">Description *</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Enter detailed description" rows={4} {...field} />
+                            <Textarea 
+                              placeholder="Provide detailed description of the work order requirements..." 
+                              rows={4} 
+                              {...field}
+                              className="resize-none"
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -142,24 +155,33 @@ const CompanyWorkOrders = () => {
                       name="dueDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Due Date</FormLabel>
+                          <FormLabel className="text-base font-semibold">Due Date</FormLabel>
                           <FormControl>
-                            <Input type="datetime-local" {...field} />
+                            <Input type="datetime-local" {...field} className="h-11" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full" disabled={createWorkOrder.isPending}>
-                      {createWorkOrder.isPending ? (
-                        <>Creating...</>
-                      ) : (
-                        <>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Create Work Order
-                        </>
-                      )}
-                    </Button>
+                    <div className="pt-2">
+                      <Button 
+                        type="submit" 
+                        className="w-full h-12 text-base font-semibold" 
+                        disabled={createWorkOrder.isPending}
+                      >
+                        {createWorkOrder.isPending ? (
+                          <div className="flex items-center gap-2">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                            Creating...
+                          </div>
+                        ) : (
+                          <>
+                            <Plus className="h-5 w-5 mr-2" />
+                            Create Work Order
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </form>
                 </Form>
               </CardContent>
@@ -168,23 +190,25 @@ const CompanyWorkOrders = () => {
         </Collapsible>
 
         {/* Search and Filters */}
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-col md:flex-row gap-4">
+        <Card className="mb-8 shadow-md border-border/50">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
                   placeholder="Search by number, title, or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-11 h-12 text-base"
                 />
               </div>
-              <div className="w-full md:w-48">
+              <div className="w-full lg:w-64">
                 <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as WorkOrderStatus | "ALL")}>
-                  <SelectTrigger>
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Filter by status" />
+                  <SelectTrigger className="h-12 text-base">
+                    <div className="flex items-center gap-2">
+                      <Filter className="h-4 w-4" />
+                      <SelectValue placeholder="Filter by status" />
+                    </div>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ALL">All Statuses</SelectItem>
@@ -201,82 +225,133 @@ const CompanyWorkOrders = () => {
         </Card>
 
         {/* Work Orders List */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {error ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-destructive mb-4">{error.message}</p>
-                <Button onClick={() => refetch()}>Retry</Button>
+            <Card className="border-destructive/50">
+              <CardContent className="py-16 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="mb-4 p-4 rounded-full bg-destructive/10 w-16 h-16 mx-auto flex items-center justify-center">
+                    <FileText className="h-8 w-8 text-destructive" />
+                  </div>
+                  <p className="text-destructive mb-6 font-medium">{error.message}</p>
+                  <Button onClick={() => refetch()} variant="outline">
+                    Retry Loading
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ) : isLoading ? (
             <>
               {[1, 2, 3].map((i) => (
-                <Card key={i}>
-                  <CardHeader>
-                    <Skeleton className="h-6 w-48 mb-2" />
-                    <Skeleton className="h-4 w-32" />
+                <Card key={i} className="shadow-md">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-7 w-3/4" />
+                        <Skeleton className="h-4 w-40" />
+                      </div>
+                      <Skeleton className="h-6 w-24" />
+                    </div>
                   </CardHeader>
                   <CardContent>
-                    <Skeleton className="h-16 w-full mb-4" />
+                    <Skeleton className="h-20 w-full mb-6" />
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
+                      <Skeleton className="h-5 w-full" />
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </>
           ) : filteredWorkOrders.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">No work orders found</p>
+            <Card className="border-dashed border-2">
+              <CardContent className="py-20 text-center">
+                <div className="max-w-md mx-auto">
+                  <div className="mb-6 p-6 rounded-full bg-muted w-24 h-24 mx-auto flex items-center justify-center">
+                    <FileText className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">No work orders found</h3>
+                  <p className="text-muted-foreground mb-6">
+                    {searchQuery || statusFilter !== "ALL" 
+                      ? "Try adjusting your search or filters" 
+                      : "Create your first work order to get started"}
+                  </p>
+                  {!searchQuery && statusFilter === "ALL" && (
+                    <Button onClick={() => setIsCreateOpen(true)} size="lg">
+                      <Plus className="h-5 w-5 mr-2" />
+                      Create Work Order
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ) : (
-            filteredWorkOrders.map((workOrder) => (
-              <Card key={workOrder.id} className="hover:shadow-md transition-shadow">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">{workOrder.title}</CardTitle>
-                        <Badge variant={WORK_ORDER_STATUS_VARIANTS[workOrder.status]}>
-                          {WORK_ORDER_STATUS_LABELS[workOrder.status]}
-                        </Badge>
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-sm text-muted-foreground">
+                  Showing <span className="font-semibold text-foreground">{filteredWorkOrders.length}</span> work order{filteredWorkOrders.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              {filteredWorkOrders.map((workOrder) => (
+                <Card key={workOrder.id} className="hover:shadow-xl transition-all duration-200 border-border/50 hover:border-primary/30">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-2 flex-1 min-w-0">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <CardTitle className="text-xl font-bold">{workOrder.title}</CardTitle>
+                          <Badge variant={WORK_ORDER_STATUS_VARIANTS[workOrder.status]} className="text-xs px-3 py-1">
+                            {WORK_ORDER_STATUS_LABELS[workOrder.status]}
+                          </Badge>
+                        </div>
+                        <CardDescription className="font-mono text-xs flex items-center gap-2">
+                          <FileText className="h-3 w-3" />
+                          {workOrder.workOrderNumber}
+                        </CardDescription>
                       </div>
-                      <CardDescription className="font-mono text-xs">
-                        {workOrder.workOrderNumber}
-                      </CardDescription>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">{workOrder.description}</p>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-muted-foreground">Due:</span>
-                      <span>{formatDate(workOrder.dueDate)}</span>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="bg-muted/30 rounded-lg p-4">
+                      <p className="text-sm text-foreground/90 leading-relaxed">{workOrder.description}</p>
                     </div>
-                    {workOrder.vendorId && (
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Assigned to vendor</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-background border">
+                        <div className="p-2 rounded-md bg-primary/10">
+                          <Calendar className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-muted-foreground font-medium">Due Date</p>
+                          <p className="text-sm font-semibold truncate">{formatDate(workOrder.dueDate)}</p>
+                        </div>
                       </div>
-                    )}
-                    {workOrder.completedDate && (
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">Completed:</span>
-                        <span>{formatDate(workOrder.completedDate)}</span>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                      {workOrder.vendorId && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-background border">
+                          <div className="p-2 rounded-md bg-accent/10">
+                            <User className="h-4 w-4 text-accent" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground font-medium">Assignment</p>
+                            <p className="text-sm font-semibold truncate">Vendor Assigned</p>
+                          </div>
+                        </div>
+                      )}
+                      {workOrder.completedDate && (
+                        <div className="flex items-center gap-3 p-3 rounded-lg bg-background border">
+                          <div className="p-2 rounded-md bg-primary/10">
+                            <Calendar className="h-4 w-4 text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs text-muted-foreground font-medium">Completed</p>
+                            <p className="text-sm font-semibold truncate">{formatDate(workOrder.completedDate)}</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </>
           )}
         </div>
       </main>
