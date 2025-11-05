@@ -1,4 +1,5 @@
 com\hourglass\jobclocksync\repository\JobRepository.class
+com\hourglass\jobclocksync\controller\UserController.class
 com\hourglass\jobclocksync\controller\InvoiceController.class
 com\hourglass\jobclocksync\model\User.class
 com\hourglass\jobclocksync\controller\TimesheetController.class
@@ -7,7 +8,6 @@ com\hourglass\jobclocksync\model\Job$JobStatus.class
 com\hourglass\jobclocksync\controller\WorkOrderController.class
 com\hourglass\jobclocksync\model\Job.class
 com\hourglass\jobclocksync\security\SecurityConfig.class
-com\hourglass\jobclocksync\config\DataInitializer.class
 com\hourglass\jobclocksync\service\JobService.class
 com\hourglass\jobclocksync\service\DashboardService.class
 com\hourglass\jobclocksync\dto\LoginRequest.class
@@ -19,6 +19,7 @@ com\hourglass\jobclocksync\model\WorkOrder.class
 com\hourglass\jobclocksync\JobClockSyncApplication.class
 com\hourglass\jobclocksync\repository\UserRepository.class
 com\hourglass\jobclocksync\dto\WorkOrderResponse.class
+com\hourglass\jobclocksync\dto\UserResponse.class
 com\hourglass\jobclocksync\model\Timesheet.class
 com\hourglass\jobclocksync\controller\AuthController.class
 com\hourglass\jobclocksync\dto\TimesheetResponse.class
@@ -27,6 +28,7 @@ com\hourglass\jobclocksync\model\Timesheet$TimesheetEntry.class
 com\hourglass\jobclocksync\security\JwtAuthenticationFilter.class
 com\hourglass\jobclocksync\dto\InvoiceResponse$InvoiceItemResponse.class
 com\hourglass\jobclocksync\model\User$UserRole.class
+com\hourglass\jobclocksync\controller\AuthController$ErrorResponse.class
 com\hourglass\jobclocksync\service\AuthService.class
 com\hourglass\jobclocksync\model\WorkOrder$WorkOrderStatus.class
 com\hourglass\jobclocksync\controller\JobController.class
@@ -36,6 +38,8 @@ com\hourglass\jobclocksync\service\WorkOrderService.class
 com\hourglass\jobclocksync\dto\JobResponse.class
 com\hourglass\jobclocksync\dto\InvoiceResponse.class
 com\hourglass\jobclocksync\model\Invoice$InvoiceStatus.class
+com\hourglass\jobclocksync\service\UserService.class
+com\hourglass\jobclocksync\dto\UserRequest.class
 com\hourglass\jobclocksync\service\TimesheetService.class
 com\hourglass\jobclocksync\dto\TimesheetRequest.class
 com\hourglass\jobclocksync\repository\WorkOrderRepository.class

@@ -5,13 +5,13 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  role: 'VENDOR' | 'COMPANY' | 'ADMIN';
+  role: 'VENDOR' | 'COMPANY';
   active: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
   logout: () => void;
   isLoading: boolean;
 }
@@ -35,11 +35,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         // Verify token is still valid by fetching current user
         api.getCurrentUser()
           .then((currentUser) => {
+            const role = currentUser.role.toUpperCase() as 'VENDOR' | 'COMPANY';
             setUser({
               id: currentUser.id,
               email: currentUser.email,
-              name: currentUser.name,
-              role: currentUser.role as 'VENDOR' | 'COMPANY' | 'ADMIN',
+              name: role, // Set name as role (Vendor or Company)
+              role: role,
               active: true, // Default to active if not provided
             });
           })
@@ -62,17 +63,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const response = await api.login(email, password);
       
+      const role = response.role.toUpperCase() as 'VENDOR' | 'COMPANY';
       const userData: User = {
         id: response.id,
         email: response.email,
-        name: response.name,
-        role: response.role as 'VENDOR' | 'COMPANY' | 'ADMIN',
+        name: role, // Set name as role (Vendor or Company)
+        role: role,
         active: true,
       };
       
+      // Set state and localStorage synchronously
       setUser(userData);
       localStorage.setItem(USER_KEY, JSON.stringify(userData));
-      return { success: true };
+      
+      // Return user data so navigation can happen immediately
+      return { success: true, user: userData };
     } catch (error) {
       return { 
         success: false, 

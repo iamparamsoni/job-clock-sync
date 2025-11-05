@@ -29,6 +29,12 @@ const Login = () => {
 
     if (result.success) {
       toast.success("Login successful!");
+      // Navigate immediately using the user data from result
+      const userData = result.user || user;
+      if (userData) {
+        const dashboardPath = userData.role === "VENDOR" ? "/vendor/dashboard" : "/company/dashboard";
+        navigate(dashboardPath);
+      }
     } else {
       toast.error(result.error || "Login failed");
     }

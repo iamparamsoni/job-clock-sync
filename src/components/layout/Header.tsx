@@ -18,14 +18,12 @@ interface HeaderProps {
 }
 
 const Header = ({ userName, user, onLogout }: HeaderProps) => {
-  const displayName = userName || user?.name || "User";
+  // Display only role name (Vendor or Company) instead of user name
+  const displayName = user?.role || "User";
 
   const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+    .substring(0, 2)
+    .toUpperCase();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">

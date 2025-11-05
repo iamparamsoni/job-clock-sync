@@ -47,6 +47,10 @@ const CompanyDashboard = () => {
 
   useEffect(() => {
     const fetchStats = async () => {
+      if (!user) {
+        return; // Don't fetch if user is not available
+      }
+
       try {
         const data = await api.getCompanyStats();
         setStats([
@@ -80,9 +84,7 @@ const CompanyDashboard = () => {
       }
     };
 
-    if (user) {
-      fetchStats();
-    }
+    fetchStats();
   }, [user]);
 
   const handleLogout = () => {
@@ -97,7 +99,7 @@ const CompanyDashboard = () => {
       
       <main className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground">Welcome back, {user?.name}</h1>
+          <h1 className="text-3xl font-bold text-foreground">Welcome back, Company</h1>
           <p className="text-muted-foreground">Here's your company overview for today.</p>
         </div>
 
