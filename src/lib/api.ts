@@ -1,4 +1,27 @@
-const API_BASE_URL = "/api";
+// Determine API base URL based on environment
+// Priority: 1. VITE_API_URL env var, 2. Lovable preview detection, 3. Local proxy
+const getApiBaseUrl = (): string => {
+  // If VITE_API_URL is explicitly set, use it
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Check if we're in Lovable preview (running on lovable.dev domain)
+  if (typeof window !== 'undefined' && window.location.hostname.includes('lovable.dev')) {
+    // For Lovable preview, backend must be publicly accessible
+    // You need to expose your local backend using a tunnel service
+    // Example: ngrok, localtunnel, cloudflared, or similar
+    // Set VITE_API_URL environment variable with your tunnel URL
+    console.warn('Lovable preview detected. Backend must be publicly accessible. Set VITE_API_URL environment variable.');
+    // Default fallback - you should set VITE_API_URL
+    return "http://localhost:8082/api";
+  }
+  
+  // Local development - use relative path (Vite proxy handles it)
+  return "/api";
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 // Token management
 const TOKEN_KEY = "hourglass_token";
