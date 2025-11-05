@@ -21,7 +21,7 @@ const VENDOR_NAV_ITEMS = [
 ];
 
 export default function VendorJobs() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState<string>("ALL");
@@ -30,7 +30,8 @@ export default function VendorJobs() {
   const applyForJob = useApplyForJob();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   return (

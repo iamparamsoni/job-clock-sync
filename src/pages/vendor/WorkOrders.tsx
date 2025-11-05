@@ -32,7 +32,7 @@ const VendorWorkOrders = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   const handleUpdateStatus = (id: string, newStatus: WorkOrderStatus) => {

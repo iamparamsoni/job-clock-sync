@@ -24,7 +24,7 @@ const COMPANY_NAV_ITEMS = [
 ];
 
 export default function CompanyTimesheets() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -36,7 +36,8 @@ export default function CompanyTimesheets() {
   const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handleCreateTimesheet = () => {

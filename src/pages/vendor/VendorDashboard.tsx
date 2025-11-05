@@ -89,7 +89,7 @@ const VendorDashboard = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    navigate("/", { replace: true });
   };
 
   return (

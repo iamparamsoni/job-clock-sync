@@ -87,9 +87,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
+    // Clear state synchronously
     setUser(null);
     tokenStorage.remove();
     localStorage.removeItem(USER_KEY);
+    // Force immediate state update
+    setIsLoading(false);
   };
 
   return (

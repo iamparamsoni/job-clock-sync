@@ -22,7 +22,7 @@ const COMPANY_NAV_ITEMS = [
 ];
 
 export default function CompanyInvoices() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -33,7 +33,8 @@ export default function CompanyInvoices() {
   const markAsPaid = useMarkInvoiceAsPaid();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const formatDate = (dateString: string) => {

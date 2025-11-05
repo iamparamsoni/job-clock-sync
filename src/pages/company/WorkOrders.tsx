@@ -37,7 +37,8 @@ const CompanyWorkOrders = () => {
 
   const handleLogout = () => {
     logout();
-    navigate("/");
+    // Navigate immediately - React state update is synchronous
+    navigate("/", { replace: true });
   };
 
   const handleAssignVendor = (workOrder: WorkOrder, e: React.MouseEvent) => {

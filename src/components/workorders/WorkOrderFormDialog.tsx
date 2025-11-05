@@ -139,14 +139,18 @@ export function WorkOrderFormDialog({ open, onOpenChange }: WorkOrderFormDialogP
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Assign to Vendor (Optional)</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={loadingVendors}>
+                  <Select 
+                    onValueChange={(value) => field.onChange(value === "none" ? "" : value)} 
+                    value={field.value || "none"} 
+                    disabled={loadingVendors}
+                  >
                     <FormControl>
                       <SelectTrigger className="bg-background">
                         <SelectValue placeholder={loadingVendors ? "Loading vendors..." : "Select a vendor (optional)"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-popover z-50">
-                      <SelectItem value="">No vendor (assign later)</SelectItem>
+                      <SelectItem value="none">No vendor (assign later)</SelectItem>
                       {vendors.map((vendor) => (
                         <SelectItem key={vendor.id} value={vendor.id}>
                           {vendor.email} - {vendor.name}

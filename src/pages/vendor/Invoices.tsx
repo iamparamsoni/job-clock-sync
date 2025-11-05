@@ -23,7 +23,7 @@ const VENDOR_NAV_ITEMS = [
 ];
 
 export default function VendorInvoices() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
@@ -33,7 +33,8 @@ export default function VendorInvoices() {
   const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handleCreateInvoice = () => {

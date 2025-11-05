@@ -23,7 +23,7 @@ const VENDOR_NAV_ITEMS = [
 ];
 
 export default function VendorTimesheets() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [timesheetFormOpen, setTimesheetFormOpen] = useState(false);
@@ -33,7 +33,8 @@ export default function VendorTimesheets() {
   const { data: workOrders = [] } = useWorkOrders();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handleCreateTimesheet = () => {

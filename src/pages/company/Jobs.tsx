@@ -23,7 +23,7 @@ const COMPANY_NAV_ITEMS = [
 ];
 
 export default function CompanyJobs() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -37,7 +37,8 @@ export default function CompanyJobs() {
   const updateJobStatus = useUpdateJobStatus();
 
   const handleLogout = () => {
-    navigate("/");
+    logout();
+    navigate("/", { replace: true });
   };
 
   const handleCreateJob = () => {
