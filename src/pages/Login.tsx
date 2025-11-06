@@ -15,6 +15,21 @@ const Login = () => {
   const { login, user } = useAuth();
   const navigate = useNavigate();
 
+  // Auto-login with demo vendor account
+  useEffect(() => {
+    const autoLogin = async () => {
+      if (!user && !isLoading) {
+        setIsLoading(true);
+        const result = await login("vendor@example.com", "password123");
+        if (result.success) {
+          toast.success("Auto-logged in as demo vendor");
+        }
+        setIsLoading(false);
+      }
+    };
+    autoLogin();
+  }, []);
+
   useEffect(() => {
     if (user) {
       navigate(user.role === "VENDOR" ? "/vendor/dashboard" : "/company/dashboard");
